@@ -1,0 +1,12 @@
+{
+  "SUPERHEROES": {
+    "Stat": {
+      "strength": "Сила",
+      "agility": "Ловкость",
+      "endurance": "Выносливость",
+      "vigilance": "Бдительность",
+      "ego": "Эго",
+      "logic": "Логика"
+    }
+  }
+}

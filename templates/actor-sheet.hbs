@@ -1,0 +1,69 @@
+<form class="superheroes-sheet">
+  <header class="sh-header">
+    <div class="sh-title">
+      <div class="sh-logo">★</div>
+      <div>
+        <input class="actor-name" name="name" type="text" value="{{actor.name}}" placeholder="Имя">
+        <div class="sh-subtitle">СУПЕРГЕРОИ</div>
+      </div>
+    </div>
+    <div class="sh-header-stats">
+      <button type="button" class="rank-box" data-action="edit-rank"><span>РАНГ</span><b>{{system.rank}}</b></button>
+      <div class="karma-box"><span>КАРМА</span><div class="karma-value"><input data-action="resource-current" data-field="karma" type="number" value="{{system.karma}}"><span>/ {{derived.maxKarma}}</span></div></div>
+      <button type="button" class="gear-button" data-action="edit-system">⚙</button>
+    </div>
+  </header>
+  <nav class="sh-tabs">
+    <button type="button" class="tab-button active" data-tab="main">Персонаж</button>
+    <button type="button" class="tab-button" data-tab="bio">Биография</button>
+  </nav>
+  <section class="tab-panel active" data-tab="main">
+    <div class="resource-row">
+      <div class="resource-card hp"><div class="resource-head"><span>ЗДОРОВЬЕ</span><button type="button" data-action="edit-resources">⚙</button></div><div class="resource-value"><input data-action="resource-current" data-field="health" type="number" value="{{system.health.value}}"><span>/ {{derived.maxHP}}</span></div></div>
+      <div class="resource-card focus"><div class="resource-head"><span>ФОКУС</span><button type="button" data-action="edit-resources">⚙</button></div><div class="resource-value"><input data-action="resource-current" data-field="focus" type="number" value="{{system.focus.value}}"><span>/ {{derived.maxFocus}}</span></div></div>
+      <div class="resource-card initiative"><div class="resource-head"><span>ИНИЦИАТИВА</span><button type="button" data-action="edit-resources">⚙</button></div><div class="resource-value"><b>{{derived.initiative}}</b></div></div>
+    </div>
+    <div class="main-grid">
+      <div class="stats-panel">
+        <div class="panel-title"><span>ХАРАКТЕРИСТИКИ</span><span class="panel-hint">⚙ — настройка</span></div>
+        {{#each derived.stats as |s key|}}
+        <div class="stat-row">
+          <div class="stat-name">{{localize (concat "SUPERHEROES.Stat." key)}}</div>
+          <button type="button" class="stat-value roll-button" data-action="roll-check" data-stat="{{key}}">{{s.value}}</button>
+          <div class="stat-derived"><span class="derived-label">ЗАЩ.</span><span>{{s.defense}}</span></div>
+          <button type="button" class="stat-derived clickable" data-action="roll-noncombat" data-stat="{{key}}"><span class="derived-label">ВНЕ БОЯ</span><span>{{s.nonCombat}}</span></button>
+          <div class="stat-derived"><span class="derived-label">ПОПАД.</span><span>{{s.hit}}</span></div>
+          <button type="button" class="attack-button" data-action="roll-attack" data-stat="{{key}}">⚔</button>
+          <button type="button" class="stat-settings" data-action="edit-stat" data-stat="{{key}}">⚙</button>
+        </div>
+        {{/each}}
+      </div>
+      <div class="side-column">
+        <section class="list-panel">
+          <div class="panel-title"><span>СПОСОБНОСТИ</span><button type="button" data-action="add-power">＋</button></div>
+          {{#each system.powers as |item i|}}
+          <div class="expandable list-item"><div class="item-head"><button type="button" class="item-title" data-action="send-item" data-type="powers" data-index="{{i}}">{{item.name}}</button><span class="item-actions"><button type="button" data-action="edit-power" data-index="{{i}}">⚙</button><button type="button" data-action="delete-item" data-type="powers" data-index="{{i}}">×</button><button type="button" class="arrow" data-action="toggle-description">⌄</button></span></div><div class="item-details"><div class="power-meta">{{#if item.movement}}<span>Перемещение: {{item.movement}}</span>{{/if}}{{#if item.cost}}<span>Стоимость: {{item.cost}}</span>{{/if}}{{#if item.range}}<span>Дальность: {{item.range}}</span>{{/if}}{{#if item.damageType}}<span>Урон: {{item.damageType}}</span>{{/if}}</div><p>{{item.description}}</p></div></div>
+          {{else}}<div class="empty">Нет способностей</div>{{/each}}
+        </section>
+        <section class="list-panel">
+          <div class="panel-title"><span>ЧЕРТЫ</span><button type="button" data-action="add-trait">＋</button></div>
+          {{#each system.traits as |item i|}}
+          <div class="expandable list-item"><div class="item-head"><button type="button" class="item-title" data-action="send-item" data-type="traits" data-index="{{i}}">{{item.name}}</button><span class="item-actions"><button type="button" data-action="edit-trait" data-index="{{i}}">⚙</button><button type="button" data-action="delete-item" data-type="traits" data-index="{{i}}">×</button><button type="button" class="arrow" data-action="toggle-description">⌄</button></span></div><div class="item-details"><p>{{item.description}}</p></div></div>
+          {{else}}<div class="empty">Нет черт</div>{{/each}}
+        </section>
+        <section class="list-panel gear-panel">
+          <div class="panel-title"><span>СНАРЯЖЕНИЕ</span><button type="button" data-action="add-gear">＋</button></div>
+          {{#each system.gear as |item i|}}
+          <div class="expandable list-item"><div class="item-head"><button type="button" class="item-title" data-action="send-item" data-type="gear" data-index="{{i}}">{{item.name}}</button><span class="item-actions"><button type="button" data-action="edit-gear" data-index="{{i}}">⚙</button><button type="button" data-action="delete-item" data-type="gear" data-index="{{i}}">×</button><button type="button" class="arrow" data-action="toggle-description">⌄</button></span></div><div class="item-details"><p>{{item.description}}</p></div></div>
+          {{else}}<div class="empty">Нет снаряжения</div>{{/each}}
+        </section>
+      </div>
+    </div>
+  </section>
+  <section class="tab-panel" data-tab="bio">
+    <div class="bio-card">
+      <div class="bio-top"><div class="portrait-placeholder">★</div><div class="bio-fields"><div class="bio-name"><span>ИМЯ</span><b>{{system.biography.name}}</b></div><div class="bio-grid"><div><span>ПРОЗВИЩЕ</span><b>{{system.biography.nickname}}</b></div><div><span>ВОЗРАСТ</span><b>{{system.biography.age}}</b></div><div><span>ПОЛ</span><b>{{system.biography.gender}}</b></div><div><span>РОСТ</span><b>{{system.biography.height}}</b></div><div><span>ВЕС</span><b>{{system.biography.weight}}</b></div><div><span>ГЛАЗА</span><b>{{system.biography.eyes}}</b></div><div><span>ВОЛОСЫ</span><b>{{system.biography.hair}}</b></div></div></div><button type="button" class="bio-edit" data-action="edit-bio">⚙</button></div>
+      <div class="bio-text-grid"><div class="text-box"><h3>ИСТОРИЯ</h3><div>{{system.biography.history}}</div></div><div class="text-box"><h3>ЗАМЕТКИ</h3><div>{{system.biography.notes}}</div></div></div>
+    </div>
+  </section>
+</form>
