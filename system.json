@@ -35,5 +35,6 @@
       "gear": {}
     }
   },
-  "packs": []
+  "packs": [],
+  "download": "https://github.com/stranik12355-star/superheroes-foundry/releases/download/v0.1.0/superheroes.zip"
 }
