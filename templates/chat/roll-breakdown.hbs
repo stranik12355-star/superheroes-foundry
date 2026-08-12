@@ -1,0 +1,27 @@
+{{#if parts.length}}
+<div class="dice-tooltip superheroes-tooltip">
+  {{#each parts}}
+    <section class="tooltip-part">
+      <div class="dice">
+        <ol class="dice-rolls">
+          {{#each rolls}}
+            <li class="roll {{classes}}">
+              <span data-action="chat-select-die" data-die-index="{{@index}}">
+                {{#if @root.isPrivate}}?{{else}}{{result}}{{/if}}
+              </span>
+            </li>
+          {{/each}}
+        </ol>
+        <div class="reroll-buttons">
+          {{#each rolls}}
+            <div class="superheroes-reroll-group">
+              <button type="button" class="retroEdgeMode roll-edge" data-retro-action="edge" data-index="{{@index}}">Преимущество</button>
+              <button type="button" class="retroEdgeMode roll-trouble" data-retro-action="trouble" data-index="{{@index}}">Помеха</button>
+            </div>
+          {{/each}}
+        </div>
+      </div>
+    </section>
+  {{/each}}
+</div>
+{{/if}}
