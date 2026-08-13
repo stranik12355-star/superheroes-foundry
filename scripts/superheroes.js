@@ -44,19 +44,12 @@ function resourceMax(value,bonus=0){
 }
 function statDerived(actor,key){
   const system=mergeDefaults(actor.system),s=system.stats[key],mod=statMod(s.value);
-  return {value:s.value,mod,defense:s.value+s.defense,nonCombat:s.value+s.nonCombat,hit:mod+s.hit,
-    stable:mod+s.stable,multiplier:Number(system.rank)+s.multiplier};
+  return {value:s.value,mod,defense:s.value+s.defense,nonCombat:s.value+s.nonCombat,hit:mod+s.hit,stable:mod+s.stable,multiplier:Number(system.rank)+s.multiplier};
 }
 function speedDerived(actor){
   const s=mergeDefaults(actor.system), a=Number(s.stats.agility.value);
   const agilityBonus=a>=10?Math.floor((a-10)/5):0;
-  return {
-    running:5+agilityBonus+s.speed.running,
-    climbing:3+s.speed.climbing,
-    swimming:3+s.speed.swimming,
-    jumping:3+s.speed.jumping,
-    flying:0+s.speed.flying
-  };
+  return {running:5+agilityBonus+s.speed.running,climbing:3+s.speed.climbing,swimming:3+s.speed.swimming,jumping:3+s.speed.jumping,flying:0+s.speed.flying};
 }
 
 class SuperheroesDie extends foundry.dice.terms.Die {
@@ -121,28 +114,23 @@ function isSuperheroesRoll(roll){
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
   await roll.evaluate({async:true});
-  return roll.toMessage({
-    speaker:ChatMessage.getSpeaker({actor}),
-    flavor,
-    flags:{superheroes:{...flags,threeD6:true}}
-  });
+  return roll.toMessage({speaker:ChatMessage.getSpeaker({actor}),flavor,flags:{superheroes:{...flags,threeD6:true}}});
 }
 async function createCheckRoll(actor,key,label){
   const s=statDerived(actor,key);
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.mod}`,label,{kind:"check",statKey:key,modifier:s.mod});
+  return make3d6Roll(actor,"{1d6,1ds,1d6} + "+s.mod,label,{kind:"check",statKey:key,modifier:s.mod});
 }
 async function createNonCombatRoll(actor,key){
   const s=statDerived(actor,key);
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.nonCombat-10}`,game.i18n.localize("SUPERHEROES.Stat."+key)+" — Вне боя",{kind:"nonCombat",statKey:key,modifier:s.nonCombat-10});
+  return make3d6Roll(actor,"{1d6,1ds,1d6} + "+(s.nonCombat-10),game.i18n.localize("SUPERHEROES.Stat."+key)+" — Вне боя",{kind:"nonCombat",statKey:key,modifier:s.nonCombat-10});
 }
 async function createAttackRoll(actor,key){
   const s=statDerived(actor,key), rankMult=Math.max(1,Number(s.multiplier));
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.hit}`,"Атака — "+game.i18n.localize("SUPERHEROES.Stat."+key),{kind:"attack",statKey:key,modifier:s.hit,damageMultiplier:rankMult,stable:s.stable,ability:s.value-10});
+  return make3d6Roll(actor,"{1d6,1ds,1d6} + "+s.hit,"Атака — "+game.i18n.localize("SUPERHEROES.Stat."+key),{kind:"attack",statKey:key,modifier:s.hit,damageMultiplier:rankMult,stable:s.stable,ability:s.value-10});
 }
 async function createInitiativeRoll(actor){
   const s=mergeDefaults(actor.system);
-  const modifier=statMod(s.stats.vigilance.value)+Number(s.initiative.bonus||0);
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${modifier}`,"Инициатива",{kind:"initiative",modifier});
+  return make3d6Roll(actor,"{1d6,1ds,1d6} + "+(statMod(s.stats.vigilance.value)+Number(s.initiative.bonus||0)),"Инициатива",{kind:"initiative"});
 }
 function activeResult(die){return [...(die.results||[])].reverse().find(r=>r.active) || die.results?.at(-1);}
 function effectiveDieResult(die){const r=activeResult(die); return die instanceof SuperheroesDie && r?.result===1 ? 6 : Number(r?.result||0);}
@@ -158,8 +146,8 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   const formulaGroups=formulaReg.exec(targetRoll._formula)?.groups;
   if(!formulaGroups) throw new Error("Не удалось определить выбранную кость");
   targetDie.number=2;
-  const targetFormula=`${targetDie.number}d${formulaGroups.dieType}`;
-  targetRoll._formula=`${targetFormula}${modifier}`;
+  const targetFormula=targetDie.number+"d"+formulaGroups.dieType;
+  targetRoll._formula=targetFormula+modifier;
   pool.terms[dieIndex]=targetRoll._formula;
   targetDie.modifiers=[modifier];
   const oldRollResult=activeResult(targetDie);
@@ -183,9 +171,9 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   const re=/(\(?{)(\dd6),(\dds),(\dd6)(}.*)/;
   let replacedFormula;
   switch(dieIndex){
-    case 0: replacedFormula=roll.formula.replace(re,`$1${targetDie.number}d6${modifier},$3,$4$5`); break;
-    case 1: replacedFormula=roll.formula.replace(re,`$1$2,${targetDie.number}ds${modifier},$4$5`); break;
-    case 2: replacedFormula=roll.formula.replace(re,`$1$2,$3,${targetDie.number}d6${modifier}$5`); break;
+    case 0: replacedFormula=roll.formula.replace(re,"$1"+targetDie.number+"d6"+modifier+",$3,$4$5"); break;
+    case 1: replacedFormula=roll.formula.replace(re,"$1$2,"+targetDie.number+"ds"+modifier+",$4$5"); break;
+    case 2: replacedFormula=roll.formula.replace(re,"$1$2,$3,"+targetDie.number+"d6"+modifier+"$5"); break;
   }
   roll._formula=replacedFormula;
   if(newRollResult.active) roll._total=roll.total-oldResult+newResult;
@@ -278,7 +266,6 @@ class SuperheroesActorSheet extends ActorSheet {
   async _editStat(key){const s=mergeDefaults(this.actor.system).stats[key];showDialog('<div class="sh-dialog"><label>Изменение характеристики (от 10)</label><input id="value" type="number" value="'+(s.value-10)+'"><label>Изменение защиты</label><input id="defense" type="number" value="'+s.defense+'"><label>Изменение вне боя</label><input id="nonCombat" type="number" value="'+s.nonCombat+'"><label>Изменение попадания</label><input id="hit" type="number" value="'+s.hit+'"><label>Изменение множителя урона</label><input id="multiplier" type="number" value="'+s.multiplier+'"><label>Изменение стабильного урона</label><input id="stable" type="number" value="'+s.stable+'"></div>',"Настройки — "+game.i18n.localize("SUPERHEROES.Stat."+key),async h=>{const p="system.stats."+key+".";await this.actor.update({[p+"value"]:10+(Number(h.find("#value").val())||0),[p+"defense"]:Number(h.find("#defense").val())||0,[p+"nonCombat"]:Number(h.find("#nonCombat").val())||0,[p+"hit"]:Number(h.find("#hit").val())||0,[p+"multiplier"]:Number(h.find("#multiplier").val())||0,[p+"stable"]:Number(h.find("#stable").val())||0});});}
   async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(function(el){el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action='edit-bio']");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field='nickname']")?.focus();}
   async _editToken(){try{const token=this.actor.prototypeToken;if(typeof TokenConfig==="function")new TokenConfig(token).render(true);else if(foundry?.applications?.sheets?.TokenConfig)new foundry.applications.sheets.TokenConfig({document:token}).render(true);else ui.notifications.warn("Окно настройки токена недоступно в этой версии Foundry.");}catch(err){console.error(err);ui.notifications.error("Не удалось открыть настройки токена.");}}
-  _listLabel(type){return type==="powers"?"способность":type==="traits"?"особенность":"снаряжение";}
   async _toggleEdit(type){
     if(!this._editing) this._editing={powers:false,traits:false,gear:false};
     this._editing[type]=!this._editing[type];
@@ -301,9 +288,9 @@ class SuperheroesActorSheet extends ActorSheet {
   async _deleteListItem(type,index){const s=mergeDefaults(this.actor.system),arr=clone(s[type]);arr.splice(index,1);await this.actor.update({["system."+type]:arr},{render:false});this.render(false);}
   async _sendItem(type,index){const item=mergeDefaults(this.actor.system)[type][index];if(!item)return;const esc=foundry.utils.escapeHTML,title=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";let meta="";if(type==="powers"){meta=[item.movement&&'<span>Перемещение: '+esc(item.movement)+'</span>',item.cost&&'<span>Стоимость: '+esc(item.cost)+'</span>',item.range&&'<span>Дальность: '+esc(item.range)+'</span>',item.damageType&&'<span>Тип урона: '+esc(item.damageType)+'</span>'].filter(Boolean).join("");}await ChatMessage.create({speaker:ChatMessage.getSpeaker({actor:this.actor}),content:'<div class="sh-chat-card"><div class="chat-title">'+title+'</div><h3>'+esc(item.name||"Без названия")+'</h3>'+(meta?'<div class="power-meta">'+meta+'</div>':'')+'<p>'+esc(item.description||"")+'</p></div>'});}
 }
-
-Hooks.once("init",()=>{
-  Handlebars.registerHelper("concat",function(a,b){return (a??"")+(b??"");}); Handlebars.registerHelper("eq",function(a,b){return a===b;});
+Hooks.once("init",function(){
+  Handlebars.registerHelper("concat",function(a,b){return (a||"")+(b||"");});
+  Handlebars.registerHelper("eq",function(a,b){return a===b;});
   CONFIG.Dice.terms.s=SuperheroesDie;
   if(!CONFIG.Dice.types.includes(SuperheroesDie))CONFIG.Dice.types.push(SuperheroesDie);
   CONFIG.Dice.rolls.push(SuperheroesRoll);
