@@ -100,3 +100,55 @@
 .row-lock.active{
   color:#e7b13a !important;
 }
+/* ===== ФИНАЛЬНЫЕ ПЕРЕОПРЕДЕЛЕНИЯ ===== */
+
+/* Кубы: справа налево + яркие боковые */
+.superheroes-tooltip .superheroes-dice-tooltip-row,
+.superheroes-tooltip .dice-rolls{
+  display:flex !important;
+  flex-direction:row-reverse !important;
+  justify-content:center !important;
+  gap:8px !important;
+}
+.superheroes-tooltip .dice-rolls .roll,
+.superheroes-tooltip .superheroes-dice-tooltip-row .roll{
+  width:46px !important;
+  height:46px !important;
+  display:grid !important;
+  place-items:center !important;
+  border:2px solid #c0c4cc !important;
+  border-radius:8px !important;
+  background:linear-gradient(145deg,#f2f2f5,#dbdde3) !important;
+  color:#1c1c22 !important;
+  font-weight:700 !important;
+  font-size:20px !important;
+}
+.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{
+  border-color:#b82c36 !important;
+  background:linear-gradient(145deg,#d53b45,#a6242e) !important;
+  color:#fff !important;
+  box-shadow:0 0 9px rgba(200,45,55,.35) !important;
+}
+.superheroes-tooltip .dice-rolls .roll.fantastic{
+  font-size:27px !important;
+}
+
+/* Блокировочная гайка: видимая и работающая */
+.sh-list-editor-row-tools .row-lock{
+  color:#aaa !important;
+  font-size:15px !important;
+  background:transparent !important;
+  border:0 !important;
+  cursor:pointer !important;
+  opacity:0.9 !important;
+}
+.sh-list-editor-row-tools .row-lock.active{
+  color:#e7b13a !important;
+  opacity:1 !important;
+}
+/* Заблокированная строка — поля нередактируемые */
+.sh-list-editor-row.locked .sh-list-editor-name,
+.sh-list-editor-row.locked .sh-list-editor-description{
+  background:#d9d9d9 !important;
+  color:#666 !important;
+}
