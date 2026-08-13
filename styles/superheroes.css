@@ -20,17 +20,6 @@
 .superheroes-roll-title{font-weight:700;color:#fff;padding:4px 0 7px;text-transform:uppercase;letter-spacing:.8px}
 .superheroes-tooltip .dice-rolls{display:flex;justify-content:center;gap:6px;list-style:none;margin:0;padding:0}
 .superheroes-tooltip .dice-rolls .roll{width:40px;height:40px;display:grid;place-items:center;border:1px solid #45464e;border-radius:6px;background:linear-gradient(145deg,#28292e,#121216);font-weight:700;font-size:18px}
-.superheroes-tooltip .dice-rolls .superheroes-middle-die{border-color:#a62c35;background:linear-gradient(145deg,#3a1519,#141014);box-shadow:0 0 8px rgba(170,40,50,.25)}
-.superheroes-tooltip .dice-rolls .superheroes-critical{font-size:24px;color:#fff}
-.superheroes-reroll-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:7px}
-.superheroes-reroll-cell{display:flex;flex-direction:column;gap:3px}
-.superheroes-reroll-cell button{font-size:7px;padding:3px;border:1px solid #34353b;background:#17171b;color:#aaa;border-radius:4px;cursor:pointer}
-.superheroes-reroll-cell button:hover{border-color:#a62c35;color:#fff}
-
-/* Исправления бросков и чата */
-.superheroes-roll-title{font-weight:700;color:#fff;padding:4px 0 7px;text-transform:uppercase;letter-spacing:.8px}
-.superheroes-tooltip .dice-rolls{display:flex;justify-content:center;gap:6px;list-style:none;margin:0;padding:0}
-.superheroes-tooltip .dice-rolls .roll{width:40px;height:40px;display:grid;place-items:center;border:1px solid #45464e;border-radius:6px;background:linear-gradient(145deg,#28292e,#121216);font-weight:700;font-size:18px}
 .superheroes-tooltip .dice-rolls .superheroes-critical{font-size:24px;color:#fff}
 .superheroes-reroll-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:7px}
 .superheroes-reroll-cell{display:flex;flex-direction:column;gap:3px}
@@ -80,86 +69,23 @@
 .superheroes-reroll-group button{font-size:7px;padding:3px;border:1px solid #34353b;background:#17171b;color:#aaa;border-radius:4px;cursor:pointer}
 .superheroes-reroll-group button:hover{border-color:#b32f39;color:#fff}
 
-.speed-panel{margin:8px 0;background:rgba(14,14,18,.9);border:1px solid #2d2d34;border-radius:7px;overflow:hidden}.speed-title{height:28px;padding:0 9px;display:flex;align-items:center;justify-content:space-between;background:#111116;border-bottom:1px solid #2a2a30;color:#aaa;font-size:9px;letter-spacing:1.4px}.speed-title button{border:0;background:transparent;color:#aaa;font-size:15px;cursor:pointer}.speed-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0}.speed-grid>div{text-align:center;padding:7px 4px;border-right:1px solid #292a30}.speed-grid>div:last-child{border-right:0}.speed-grid span{display:block;color:#777;font-size:7px;letter-spacing:1px}.speed-grid b{display:block;color:#fff;font-size:14px;margin-top:2px}.superheroes-tooltip .superheroes-dice-tooltip-row{display:flex;justify-content:center;gap:7px;list-style:none;margin:0;padding:0}.superheroes-tooltip .superheroes-dice-tooltip-row .roll{width:40px;height:40px;display:grid;place-items:center;border:1px solid #45464e;border-radius:6px;background:linear-gradient(145deg,#28292e,#121216);font-weight:700;font-size:18px}.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{border-color:#a62d36;background:linear-gradient(145deg,#3b171b,#151115)}.superheroes-tooltip .superheroes-dice-tooltip-row .roll.fantastic{font-size:24px}.superheroes-reroll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}.superheroes-reroll-cell{display:flex;flex-direction:column;gap:3px}.superheroes-reroll-cell button{font-size:8px;padding:3px 4px;border:1px solid #34353b;background:#17171b;color:#aaa;border-radius:4px;cursor:pointer}.superheroes-reroll-cell button:hover{border-color:#a62c35;color:#fff}.superheroes-damage{display:block;margin:7px auto 0;padding:4px 12px;border:1px solid #8d2b33;background:#17171b;color:#eee;border-radius:4px;cursor:pointer}.superheroes-damage:hover{border-color:#d34a53}.sh-damage-result{padding:6px 0}.sh-damage-result small{color:#888}.actor-name{color:#fff!important;text-shadow:0 0 0 #fff!important;border-color:#a62c35!important}.sh-subtitle{color:#b7323c!important}.sh-name-block input::placeholder{color:#777!important}
+.speed-panel{margin:8px 0;background:rgba(14,14,18,.9);border:1px solid #2d2d34;border-radius:7px;overflow:hidden}.speed-title{height:28px;padding:0 9px;display:flex;align-items:center;justify-content:space-between;background:#111116;border-bottom:1px solid #2a2a30;color:#aaa;font-size:9px;letter-spacing:1.4px}.speed-title button{border:0;background:transparent;color:#aaa;font-size:15px;cursor:pointer}.speed-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0}.speed-grid>div{text-align:center;padding:7px 4px;border-right:1px solid #292a30}.speed-grid>div:last-child{border-right:0}.speed-grid span{display:block;color:#777;font-size:7px;letter-spacing:1px}.speed-grid b{display:block;color:#fff;font-size:14px;margin-top:2px}.superheroes-tooltip .superheroes-dice-tooltip-row{display:flex;flex-direction:row-reverse;justify-content:center;gap:7px;list-style:none;margin:0;padding:0}.superheroes-tooltip .superheroes-dice-tooltip-row .roll{width:40px;height:40px;display:grid;place-items:center;border:1px solid #45464e;border-radius:6px;background:linear-gradient(145deg,#28292e,#121216);font-weight:700;font-size:18px}.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{border-color:#b82c36;background:linear-gradient(145deg,#c7353f,#9c222c);color:#fff;box-shadow:0 0 9px rgba(200,45,55,.35)}.superheroes-tooltip .superheroes-dice-tooltip-row .roll.fantastic{font-size:24px}.superheroes-reroll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}.superheroes-reroll-cell{display:flex;flex-direction:column;gap:3px}.superheroes-reroll-cell button{font-size:8px;padding:3px 4px;border:1px solid #34353b;background:#17171b;color:#aaa;border-radius:4px;cursor:pointer}.superheroes-reroll-cell button:hover{border-color:#a62c35;color:#fff}.superheroes-damage{display:block;margin:7px auto 0;padding:4px 12px;border:1px solid #8d2b33;background:#17171b;color:#eee;border-radius:4px;cursor:pointer}.superheroes-damage:hover{border-color:#d34a53}.sh-damage-result{padding:6px 0}.sh-damage-result small{color:#888}.actor-name{color:#fff!important;text-shadow:0 0 0 #fff!important;border-color:#a62c35!important}.sh-subtitle{color:#b7323c!important}.sh-name-block input::placeholder{color:#777!important}
 
+.initiative-roll{border:0;background:transparent;color:#eee;cursor:pointer;font:inherit;padding:0}.initiative-roll:hover{color:#fff}
 
-/* ===== Редактор способностей / особенностей / снаряжения ===== */
-.sh-list-editor{padding:9px;background:#0f0f12}
-.sh-list-editor-rows{display:flex;flex-direction:column;gap:8px}
-.sh-list-editor-row{position:relative;border:1px solid #35353c;border-left:3px solid #a62c35;border-radius:6px;background:#151519;padding:9px}
-.sh-list-editor-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;color:#999;font-size:8px;letter-spacing:1px}
-.sh-list-editor-row-tools{display:flex;align-items:center;gap:4px}
-.sh-list-editor-row label{display:block;margin:5px 0 3px;color:#777;font-size:8px;letter-spacing:1px}
-.sh-list-editor-name,.sh-list-editor-description,.sh-list-editor-extra{width:100%;box-sizing:border-box;background:#fff!important;color:#111!important;border:1px solid #999!important;border-radius:4px;padding:5px 6px;font-size:11px;outline:none}
-.sh-list-editor-name:focus,.sh-list-editor-description:focus,.sh-list-editor-extra:focus{border-color:#b7323c!important;box-shadow:0 0 0 1px rgba(183,50,60,.2)}
-.sh-list-editor-description{min-height:100px;resize:vertical;line-height:1.4}
-.sh-list-editor-power-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.sh-list-editor-power-meta label{margin-top:7px}
-.sh-list-editor-row.locked .sh-list-editor-name,.sh-list-editor-row.locked .sh-list-editor-description,.sh-list-editor-row.locked .sh-list-editor-extra{background:#26262b!important;color:#aaa!important;border-color:#3a3a41!important}
-.row-lock,.sh-list-editor-remove{border:1px solid #3a3a41;background:#1a1a1f;color:#aaa;border-radius:4px;cursor:pointer;min-width:27px;height:27px}
-.row-lock:hover,.row-lock.active,.sh-list-editor-remove:hover{border-color:#b7323c;color:#fff}
-.sh-list-editor-remove{color:#9a696d}
-.sh-list-editor-add{display:grid;place-items:center;width:100%;height:42px;margin-top:8px;border:1px dashed #5a292e;background:#171317;color:#c03a44;border-radius:6px;font-size:25px;cursor:pointer}
-.sh-list-editor-add:hover{background:#201417;border-color:#b7323c;color:#fff}
-.list-edit-toggle{width:30px;height:27px;border:1px solid transparent!important;border-radius:4px}
-.list-edit-toggle:hover,.list-edit-toggle.active{border-color:#b7323c!important;background:#211416!important;color:#fff!important}
-.list-edit-toggle.active{color:#d24a53!important}
-.list-view-item .item-title{font-size:12px}
-.initiative-roll{border:0;background:transparent;color:#eee;cursor:pointer;font-size:17px;padding:0;min-width:42px}
-.initiative-roll:hover{color:#fff;text-shadow:0 0 5px rgba(190,50,60,.5)}
-@media(max-width:800px){.sh-list-editor-power-meta{grid-template-columns:1fr 1fr}}
-/* Кубы справа налево, ярче */
-.superheroes-tooltip .superheroes-dice-tooltip-row,
-.superheroes-tooltip .dice-rolls{
-  display:flex;
-  flex-direction:row-reverse;
-  justify-content:center;
-  gap:8px;
-}
-.superheroes-tooltip .dice-rolls .roll,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll{
-  width:46px;height:46px;
-  display:grid;place-items:center;
-  border:2px solid #8b8f98;
-  border-radius:7px;
-  background:linear-gradient(145deg,#e7e8ec,#d2d4da);
-  color:#1a1a1f;
-  font-weight:700;
-  font-size:20px;
-}
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{
-  border-color:#b82c36;
-  background:linear-gradient(145deg,#d53b45,#a6242e);
-  color:#fff;
-  box-shadow:0 0 9px rgba(200,45,55,.35);
-}
-.superheroes-tooltip .dice-rolls .roll.fantastic{
-  font-size:26px;
-}
-/* Кнопки преимущества/помехи — всегда видны */
-.superheroes-reroll-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-  margin-top:8px;
-}
-.superheroes-reroll-cell{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-.superheroes-reroll-cell button{
-  font-size:8px;
-  padding:3px 4px;
-  border:1px solid #34353b;
-  background:#17171b;
-  color:#ccc;
-  border-radius:4px;
-  cursor:pointer;
-  line-height:1.2;
-}
-.superheroes-reroll-cell button:hover{
-  border-color:#b82c36;
-  color:#fff;
-  background:#211416;
-}
+/* Редактор способностей / особенностей / снаряжения */
+.sh-list-editor{display:flex;flex-direction:column;gap:9px}.sh-list-editor-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;background:#111116;border:1px solid #2d2d34;border-radius:7px}.sh-list-editor-toolbar b{display:block;color:#eee;font-size:13px}.sh-list-editor-toolbar small{display:block;color:#777;font-size:9px;margin-top:3px;line-height:1.35}.sh-list-editor-add{flex:0 0 36px;width:36px;height:36px;border:1px solid #6f252d;background:#171116;color:#eee;border-radius:6px;font-size:22px;line-height:1;cursor:pointer}.sh-list-editor-add:hover{border-color:#c23b45;background:#241417;color:#fff}.sh-list-editor-rows{display:flex;flex-direction:column;gap:8px}.sh-list-editor-row{padding:10px;background:#101014;border:1px solid #303139;border-radius:7px}.sh-list-editor-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:#777;font-size:8px;letter-spacing:1.2px}.sh-list-editor-remove{border:0;background:transparent;color:#777;font-size:17px;line-height:1;cursor:pointer}.sh-list-editor-remove:hover{color:#d24a53}.sh-list-editor-row label{display:block;margin:5px 0 4px;color:#777;font-size:9px;letter-spacing:.8px}.sh-list-editor-name,.sh-list-editor-description{box-sizing:border-box;width:100%;background:#fff!important;color:#111!important;border:1px solid #aaa!important;border-radius:4px;padding:6px 7px;font:inherit}.sh-list-editor-name{height:32px;font-size:13px}.sh-list-editor-description{min-height:105px;resize:vertical;font-size:11px;line-height:1.4}.sh-list-editor-empty{padding:16px 10px;text-align:center;color:#65656b;background:#101014;border:1px dashed #303139;border-radius:7px;font-size:10px}.sh-list-editor-empty[hidden]{display:none}.dialog.sh-list-editor-dialog .window-content{padding:10px}
+
+/* Встроенное редактирование способностей, особенностей и снаряжения */
+.inline-list-editor{margin:7px 0;padding:10px;background:#101014;border:1px solid #8f2932;border-radius:6px;box-shadow:0 0 0 1px rgba(180,45,55,.08);}
+.inline-list-editor-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;color:#777;font-size:8px;letter-spacing:1.2px;}
+.inline-list-editor-actions{display:flex;gap:4px;}
+.inline-list-editor-actions button{width:27px;height:25px;padding:0;border:1px solid #35363d;background:#17171b;color:#aaa;border-radius:4px;font-size:14px;cursor:pointer;}
+.inline-list-editor-actions button:hover{border-color:#b7323c;color:#fff;}
+.inline-list-editor label{display:block;margin:7px 0 4px;color:#777;font-size:8px;letter-spacing:1px;}
+.inline-list-name,.inline-list-description{display:block;box-sizing:border-box;width:100%;background:#fff!important;color:#111!important;border:1px solid #777!important;border-radius:2px;outline:none;font:inherit;}
+.inline-list-name{height:31px;padding:5px 7px;font-size:12px;}
+.inline-list-description{min-height:72px;padding:7px;resize:vertical;line-height:1.4;font-size:11px;}
+.inline-list-name:focus,.inline-list-description:focus{border-color:#b7323c!important;box-shadow:0 0 0 1px rgba(183,50,60,.2);}
+.list-items{display:flex;flex-direction:column;}
+.list-item .item-title{min-width:0;}
