@@ -1,0 +1,15 @@
+<div class="sh-chat-card {{#if critical}}critical{{/if}}">
+ <div class="chat-title">{{label}}</div>
+ {{#if (eq kind "check")}}
+ <div class="dice-line">
+  {{#each dice as |die i|}}<div class="roll-die {{#if (eq i 1)}}middle{{/if}} {{#if (and (eq i 1) ../critical)}}critical-die{{/if}}">{{#if (and (eq i 1) ../critical)}}★{{else}}{{die}}{{/if}}</div>{{/each}}
+ </div>
+ <div class="reroll-row">
+  {{#each dice as |die i|}}<div class="reroll-cell"><button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="advantage">Преимущество</button><button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="disadvantage">Помеха</button></div>{{/each}}
+ </div>
+ {{else}}
+ <div class="attack-roll"><span>(1d6 × {{multiplier}}) + {{modifier}}</span><strong>{{total}}</strong></div>
+ {{/if}}
+ <div class="chat-total"><span>Результат</span><strong>{{total}}</strong></div>
+ {{#if critical}}<div class="critical-note">★ КРИТИЧЕСКИЙ РЕЗУЛЬТАТ — ЦЕНТРАЛЬНАЯ КОСТЬ СЧИТАЕТСЯ КАК 6</div>{{/if}}
+</div>
