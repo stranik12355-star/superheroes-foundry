@@ -16,7 +16,6 @@ const SH_DEFAULTS = {
   },
   powers: [], traits: [], gear: []
 };
-
 const clone = o => foundry.utils.deepClone(o);
 function mergeDefaults(source={}) {
   const d=clone(SH_DEFAULTS);
@@ -60,7 +59,6 @@ function speedDerived(actor){
   };
 }
 
-/** Специальная центральная d6. На 1 отображается ★ и считается как 6. */
 class SuperheroesDie extends foundry.dice.terms.Die {
   static DENOMINATION = "s";
   constructor(termData={}) { super({...termData, faces:6}); }
@@ -80,7 +78,6 @@ class SuperheroesDie extends foundry.dice.terms.Die {
   get total(){ const total=super.total; return total===1?6:total; }
 }
 
-/** Roll с тем же PoolTerm/Edge/Trouble подходом, который использует Marvel Multiverse. */
 class SuperheroesRoll extends Roll {
   constructor(formula,data,options={}){
     super(formula,data,options);
@@ -111,7 +108,6 @@ class SuperheroesRoll extends Roll {
   static CHAT_TEMPLATE="systems/superheroes/templates/dice/roll.hbs";
   static TOOLTIP_TEMPLATE="systems/superheroes/templates/chat/roll-breakdown.hbs";
 }
-
 function getPool(roll){
   const first=roll?.terms?.[0];
   if(first instanceof foundry.dice.terms.PoolTerm) return first;
@@ -122,7 +118,6 @@ function isSuperheroesRoll(roll){
   const pool=getPool(roll);
   return !!(pool?.rolls?.length===3 && pool.rolls[1]?.terms?.[0] instanceof SuperheroesDie);
 }
-
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
   await roll.evaluate({async:true});
@@ -138,22 +133,20 @@ async function createCheckRoll(actor,key,label){
 }
 async function createNonCombatRoll(actor,key){
   const s=statDerived(actor,key);
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.nonCombat-10}`,`${game.i18n.localize(`SUPERHEROES.Stat.${key}`)} — Вне боя`,{kind:"nonCombat",statKey:key,modifier:s.nonCombat-10});
+  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.nonCombat-10}`,game.i18n.localize("SUPERHEROES.Stat."+key)+" — Вне боя",{kind:"nonCombat",statKey:key,modifier:s.nonCombat-10});
 }
 async function createAttackRoll(actor,key){
   const s=statDerived(actor,key), rankMult=Math.max(1,Number(s.multiplier));
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.hit}`,`Атака — ${game.i18n.localize(`SUPERHEROES.Stat.${key}`)}`,{kind:"attack",statKey:key,modifier:s.hit,damageMultiplier:rankMult,stable:s.stable,ability:s.value-10});
+  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${s.hit}`,"Атака — "+game.i18n.localize("SUPERHEROES.Stat."+key),{kind:"attack",statKey:key,modifier:s.hit,damageMultiplier:rankMult,stable:s.stable,ability:s.value-10});
 }
 async function createInitiativeRoll(actor){
   const s=mergeDefaults(actor.system);
   const modifier=statMod(s.stats.vigilance.value)+Number(s.initiative.bonus||0);
   return make3d6Roll(actor,`{1d6,1ds,1d6} + ${modifier}`,"Инициатива",{kind:"initiative",modifier});
 }
-
 function activeResult(die){return [...(die.results||[])].reverse().find(r=>r.active) || die.results?.at(-1);}
 function effectiveDieResult(die){const r=activeResult(die); return die instanceof SuperheroesDie && r?.result===1 ? 6 : Number(r?.result||0);}
 
-/** Точная схема ретро-переброса Marvel: меняется только выбранный Roll внутри PoolTerm. */
 async function rerollSuperheroesDie(messageId,dieIndex,mode){
   const chatMessage=game.messages.get(messageId);
   const roll=chatMessage?.rolls?.[0];
@@ -169,17 +162,14 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   targetRoll._formula=`${targetFormula}${modifier}`;
   pool.terms[dieIndex]=targetRoll._formula;
   targetDie.modifiers=[modifier];
-
   const oldRollResult=activeResult(targetDie);
   if(!oldRollResult) throw new Error("У выбранной кости нет результата");
   const oldResult=isMiddle&&oldRollResult.result===1?6:oldRollResult.result;
-
   const newRoll=new SuperheroesRoll(targetRoll._formula,{...targetRoll.data});
   await newRoll.evaluate({async:true});
   const newRollResult=newRoll.terms[0].results[0];
   const newFantastic=isMiddle&&newRollResult.result===1;
   const newResult=newFantastic?6:newRollResult.result;
-
   const setActive=(result,active)=>{result.active=active; result.discarded=!active;};
   if(modifier==="kh"){
     if(newFantastic||newResult>=oldResult){setActive(oldRollResult,false);setActive(newRollResult,true);}
@@ -190,7 +180,6 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
     else {setActive(newRollResult,false);setActive(oldRollResult,true);}
   }
   targetDie.results.push(newRollResult);
-
   const re=/(\(?{)(\dd6),(\dds),(\dd6)(}.*)/;
   let replacedFormula;
   switch(dieIndex){
@@ -200,14 +189,12 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   }
   roll._formula=replacedFormula;
   if(newRollResult.active) roll._total=roll.total-oldResult+newResult;
-
   const update=await roll.toMessage({flavor:chatMessage.flavor?.content||chatMessage.flavor||"Бросок"},{create:false});
   const merged=foundry.utils.mergeObject(chatMessage.toJSON(),update);
   await chatMessage.update(merged);
   if(game.dice3d?.showForRoll){try{await game.dice3d.showForRoll(newRoll,game.user,true);}catch(err){console.warn("Супергерои | Dice3D",err);}}
   return roll;
 }
-
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
@@ -217,12 +204,10 @@ async function rollDamageFromMessage(messageId){
   const damageRoll=new Roll("1d6"); await damageRoll.evaluate({async:true});
   const die=damageRoll.dice[0];
   const total=Number(die.total||0)*multiplier+strengthMod+stable;
-  await damageRoll.toMessage({speaker:message.speaker,flavor:`УРОН — ×${multiplier} + ${strengthMod+stable}` ,content:`<div class="sh-damage-result"><b>Урон:</b> ${total}<br><small>1d6 × ${multiplier} + ${strengthMod+stable}</small></div>`});
+  await damageRoll.toMessage({speaker:message.speaker,flavor:"УРОН — ×"+multiplier+" + "+(strengthMod+stable),content:'<div class="sh-damage-result"><b>Урон:</b> '+total+'<br><small>1d6 × '+multiplier+' + '+(strengthMod+stable)+'</small></div>'});
 }
-
 function showDialog(content,title,callback){new Dialog({title,content,buttons:{save:{label:"Сохранить",callback},cancel:{label:"Отмена"}},default:"save"}).render(true);}
 function safe(v){return foundry.utils.escapeHTML(v??"");}
-
 
 class SuperheroesActorSheet extends ActorSheet {
   static get defaultOptions(){return foundry.utils.mergeObject(super.defaultOptions,{classes:["superheroes","sheet","actor"],template:"systems/superheroes/templates/actor-sheet.hbs",width:900,height:820,resizable:true,submitOnChange:false});}
@@ -233,7 +218,7 @@ class SuperheroesActorSheet extends ActorSheet {
     for(const key of Object.keys(system.stats))stats[key]={...system.stats[key],...statDerived(this.actor,key)};
     data.system=system;
     if(!this._editing) this._editing={powers:false,traits:false,gear:false};
-	data.derived={maxHP,maxFocus,maxKarma:system.rank,initiative:statMod(system.stats.vigilance.value)+system.initiative.bonus,stats,speed:speedDerived(this.actor),editing:this._editing};
+    data.derived={maxHP,maxFocus,maxKarma:system.rank,initiative:statMod(system.stats.vigilance.value)+system.initiative.bonus,stats,speed:speedDerived(this.actor),editing:this._editing};
     data.editable=this.isEditable;
     return data;
   }
@@ -242,7 +227,7 @@ class SuperheroesActorSheet extends ActorSheet {
     html.on("click.superheroes","[data-action]",async e=>{
       e.preventDefault();e.stopPropagation();const el=e.currentTarget,a=el.dataset.action;
       try{
-        if(a==="roll-check")return createCheckRoll(this.actor,el.dataset.stat,game.i18n.localize(`SUPERHEROES.Stat.${el.dataset.stat}`));
+        if(a==="roll-check")return createCheckRoll(this.actor,el.dataset.stat,game.i18n.localize("SUPERHEROES.Stat."+el.dataset.stat));
         if(a==="roll-noncombat")return createNonCombatRoll(this.actor,el.dataset.stat);
         if(a==="roll-attack")return createAttackRoll(this.actor,el.dataset.stat);
         if(a==="roll-initiative")return createInitiativeRoll(this.actor);
@@ -253,10 +238,9 @@ class SuperheroesActorSheet extends ActorSheet {
         if(a==="edit-speed")return this._editSpeed();
         if(a==="sleep")return this._sleep();
         if(a==="edit-rank")return this._editRank();
-        if(a==="toggle-edit")return this._toggleListEdit(el.dataset.type);
+        if(a==="toggle-edit")return this._toggleEdit(el.dataset.type);
         if(a==="add-list-row")return this._addListRow(el.dataset.type);
         if(a==="toggle-row-lock")return this._toggleRowLock(el.closest(".sh-list-editor-row"));
-        if(a==="delete-list-row")return this._deleteListRow(el.closest(".sh-list-editor-row"));
         if(a==="delete-item")return this._deleteListItem(el.dataset.type,Number(el.dataset.index));
         if(a==="toggle-description")return el.closest(".expandable")?.classList.toggle("expanded");
         if(a==="send-item")return this._sendItem(el.dataset.type,Number(el.dataset.index));
@@ -264,117 +248,72 @@ class SuperheroesActorSheet extends ActorSheet {
         if(a==="edit-token")return this._editToken();
       }catch(err){console.error("Супергерои | действие листа",a,err);ui.notifications.error("Не удалось выполнить действие. Подробности в консоли.");}
     });
-    html.on("click.superheroes",".tab-button",e=>{e.preventDefault();html.find(".tab-button").removeClass("active");html.find(".tab-panel").removeClass("active");e.currentTarget.classList.add("active");html.find(`.tab-panel[data-tab='${e.currentTarget.dataset.tab}']`).addClass("active");});
-    /* Сохраняем биографию без перерисовки ActorSheet: именно это не выбрасывает пользователя на вкладку персонажа. */
+    html.on("click.superheroes",".tab-button",e=>{e.preventDefault();html.find(".tab-button").removeClass("active");html.find(".tab-panel").removeClass("active");e.currentTarget.classList.add("active");html.find(".tab-panel[data-tab='"+e.currentTarget.dataset.tab+"']").addClass("active");});
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
       if(field==="name") await this.actor.update({name:value,"system.biography.name":value},{render:false});
-      else await this.actor.update({[`system.biography.${field}`]:value},{render:false});
+      else await this.actor.update({["system.biography."+field]:value},{render:false});
     });
     html.on("change.superheroes","input[data-action='resource-current']",e=>{
       const field=e.currentTarget.dataset.field,s=mergeDefaults(this.actor.system),raw=Math.max(0,Number(e.currentTarget.value)||0);
       if(field==="karma")return this.actor.update({"system.karma":raw});
       const max=field==="health"?resourceMax(s.stats.endurance.value,s.health.bonus):resourceMax(s.stats.vigilance.value,s.focus.bonus);
-      return this.actor.update({[`system.${field}.value`]:Math.min(max,raw)});
+      return this.actor.update({["system."+field+".value"]:Math.min(max,raw)});
+    });
+    html.on("change.superheroes","[data-edit-field]",async e=>{
+      const el=e.currentTarget, field=el.dataset.editField, type=el.dataset.type, index=Number(el.dataset.index);
+      if(!["powers","traits","gear"].includes(type)) return;
+      const s=mergeDefaults(this.actor.system), arr=clone(s[type]||[]);
+      if(!arr[index]) return;
+      arr[index]={...arr[index],[field]:el.value};
+      await this.actor.update({["system."+type]:arr},{render:false});
     });
   }
-  async _editRank(){const s=mergeDefaults(this.actor.system);showDialog(`<div class="sh-dialog"><label>Ранг (1–5)</label><input id="rank" type="number" min="1" max="5" value="${s.rank}"></div>`,"Ранг",async h=>this.actor.update({"system.rank":Math.min(5,Math.max(1,Number(h.find("#rank").val())||1))}));}
-  async _editHealth(){const s=mergeDefaults(this.actor.system);showDialog(`<div class="sh-dialog"><label>Дополнительный максимум здоровья</label><input id="bonus" type="number" value="${s.health.bonus}"></div>`,"Настройки здоровья",async h=>this.actor.update({"system.health.bonus":Number(h.find("#bonus").val())||0}));}
-  async _editFocus(){const s=mergeDefaults(this.actor.system);showDialog(`<div class="sh-dialog"><label>Дополнительный максимум фокуса</label><input id="bonus" type="number" value="${s.focus.bonus}"></div>`,"Настройки фокуса",async h=>this.actor.update({"system.focus.bonus":Number(h.find("#bonus").val())||0}));}
-  async _editInitiative(){const s=mergeDefaults(this.actor.system);showDialog(`<div class="sh-dialog"><label>Поправка инициативы</label><input id="bonus" type="number" value="${s.initiative.bonus}"></div>`,"Настройки инициативы",async h=>this.actor.update({"system.initiative.bonus":Number(h.find("#bonus").val())||0}));}
-  async _editSpeed(){const s=mergeDefaults(this.actor.system);const labels={running:"Бег",climbing:"Лазание",swimming:"Плавание",jumping:"Прыжок",flying:"Полёт"};const fields=Object.entries(labels).map(([k,l])=>`<label>${l} — дополнительное значение</label><input id="${k}" type="number" value="${s.speed[k]}">`).join("");showDialog(`<div class="sh-dialog">${fields}</div>`,"Настройки скорости",async h=>{const p={};for(const k of Object.keys(labels))p[`system.speed.${k}`]=Number(h.find(`#${k}`).val())||0;await this.actor.update(p);});}
+  async _editRank(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Ранг (1–5)</label><input id="rank" type="number" min="1" max="5" value="'+s.rank+'"></div>',"Ранг",async h=>this.actor.update({"system.rank":Math.min(5,Math.max(1,Number(h.find("#rank").val())||1))}));}
+  async _editHealth(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Дополнительный максимум здоровья</label><input id="bonus" type="number" value="'+s.health.bonus+'"></div>',"Настройки здоровья",async h=>this.actor.update({"system.health.bonus":Number(h.find("#bonus").val())||0}));}
+  async _editFocus(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Дополнительный максимум фокуса</label><input id="bonus" type="number" value="'+s.focus.bonus+'"></div>',"Настройки фокуса",async h=>this.actor.update({"system.focus.bonus":Number(h.find("#bonus").val())||0}));}
+  async _editInitiative(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Поправка инициативы</label><input id="bonus" type="number" value="'+s.initiative.bonus+'"></div>',"Настройки инициативы",async h=>this.actor.update({"system.initiative.bonus":Number(h.find("#bonus").val())||0}));}
+  async _editSpeed(){const s=mergeDefaults(this.actor.system);const labels={running:"Бег",climbing:"Лазание",swimming:"Плавание",jumping:"Прыжок",flying:"Полёт"};const fields=Object.entries(labels).map(function(e){return '<label>'+e[1]+' — дополнительное значение</label><input id="'+e[0]+'" type="number" value="'+s.speed[e[0]]+'">'}).join("");showDialog('<div class="sh-dialog">'+fields+'</div>',"Настройки скорости",async h=>{const p={};for(const k of Object.keys(labels))p["system.speed."+k]=Number(h.find("#"+k).val())||0;await this.actor.update(p);});}
   async _sleep(){const s=mergeDefaults(this.actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);await this.actor.update({"system.karma":s.rank,"system.health.value":hp,"system.focus.value":focus});}
-  async _editStat(key){const s=mergeDefaults(this.actor.system).stats[key];showDialog(`<div class="sh-dialog"><label>Изменение характеристики (от 10)</label><input id="value" type="number" value="${s.value-10}"><label>Изменение защиты</label><input id="defense" type="number" value="${s.defense}"><label>Изменение вне боя</label><input id="nonCombat" type="number" value="${s.nonCombat}"><label>Изменение попадания</label><input id="hit" type="number" value="${s.hit}"><label>Изменение множителя урона</label><input id="multiplier" type="number" value="${s.multiplier}"><label>Изменение стабильного урона</label><input id="stable" type="number" value="${s.stable}"></div>`,`Настройки — ${game.i18n.localize(`SUPERHEROES.Stat.${key}`)}`,async h=>{const p=`system.stats.${key}.`;await this.actor.update({[p+"value"]:10+(Number(h.find("#value").val())||0),[p+"defense"]:Number(h.find("#defense").val())||0,[p+"nonCombat"]:Number(h.find("#nonCombat").val())||0,[p+"hit"]:Number(h.find("#hit").val())||0,[p+"multiplier"]:Number(h.find("#multiplier").val())||0,[p+"stable"]:Number(h.find("#stable").val())||0});});}
-  async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(el=>{el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action=\"edit-bio\"]");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field=\"nickname\"]")?.focus();}
+  async _editStat(key){const s=mergeDefaults(this.actor.system).stats[key];showDialog('<div class="sh-dialog"><label>Изменение характеристики (от 10)</label><input id="value" type="number" value="'+(s.value-10)+'"><label>Изменение защиты</label><input id="defense" type="number" value="'+s.defense+'"><label>Изменение вне боя</label><input id="nonCombat" type="number" value="'+s.nonCombat+'"><label>Изменение попадания</label><input id="hit" type="number" value="'+s.hit+'"><label>Изменение множителя урона</label><input id="multiplier" type="number" value="'+s.multiplier+'"><label>Изменение стабильного урона</label><input id="stable" type="number" value="'+s.stable+'"></div>',"Настройки — "+game.i18n.localize("SUPERHEROES.Stat."+key),async h=>{const p="system.stats."+key+".";await this.actor.update({[p+"value"]:10+(Number(h.find("#value").val())||0),[p+"defense"]:Number(h.find("#defense").val())||0,[p+"nonCombat"]:Number(h.find("#nonCombat").val())||0,[p+"hit"]:Number(h.find("#hit").val())||0,[p+"multiplier"]:Number(h.find("#multiplier").val())||0,[p+"stable"]:Number(h.find("#stable").val())||0});});}
+  async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(function(el){el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action='edit-bio']");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field='nickname']")?.focus();}
   async _editToken(){try{const token=this.actor.prototypeToken;if(typeof TokenConfig==="function")new TokenConfig(token).render(true);else if(foundry?.applications?.sheets?.TokenConfig)new foundry.applications.sheets.TokenConfig({document:token}).render(true);else ui.notifications.warn("Окно настройки токена недоступно в этой версии Foundry.");}catch(err){console.error(err);ui.notifications.error("Не удалось открыть настройки токена.");}}
-  async _toggleListEdit(type){
-    if(!["powers","traits","gear"].includes(type)) return;
+  _listLabel(type){return type==="powers"?"способность":type==="traits"?"особенность":"снаряжение";}
+  async _toggleEdit(type){
     if(!this._editing) this._editing={powers:false,traits:false,gear:false};
-    if(this._editing[type]){
-      const saved=await this._saveListDraft(type);
-      if(!saved) return;
-      this._editing[type]=false;
-      this.render(false);
-      return;
-    }
-    this._editing[type]=true;
+    this._editing[type]=!this._editing[type];
     this.render(false);
   }
-  _editorRowHTML(type,item={}){
-    const label=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";
-    const name=safe(item.name||""),desc=safe(item.description||"");
-    const power=type==="powers";
-    return `<div class="sh-list-editor-row" data-index="-1">
-      <div class="sh-list-editor-row-head"><span>${label}</span><span class="sh-list-editor-row-tools"><button type="button" class="row-lock" data-action="toggle-row-lock" title="Заблокировать/разблокировать">⚙</button><button type="button" class="sh-list-editor-remove" data-action="delete-list-row" title="Удалить">×</button></span></div>
-      <label>НАЗВАНИЕ</label><input class="sh-list-editor-name" type="text" value="${name}" placeholder="Название">
-      ${power?`<div class="sh-list-editor-power-meta"><div><label>ПЕРЕМЕЩЕНИЕ</label><input class="sh-list-editor-extra" data-field="movement" type="text" value="${safe(item.movement||"")}" placeholder="Не указано"></div><div><label>СТОИМОСТЬ</label><input class="sh-list-editor-extra" data-field="cost" type="text" value="${safe(item.cost||"")}" placeholder="Не указано"></div><div><label>ДАЛЬНОСТЬ</label><input class="sh-list-editor-extra" data-field="range" type="text" value="${safe(item.range||"")}" placeholder="Не указано"></div><div><label>ТИП УРОНА</label><input class="sh-list-editor-extra" data-field="damageType" type="text" value="${safe(item.damageType||"")}" placeholder="Не указано"></div></div>`:""}
-      <label>ОПИСАНИЕ</label><textarea class="sh-list-editor-description" placeholder="Описание">${desc}</textarea>
-    </div>`;
-  }
   async _addListRow(type){
-    if(!this._editing?.[type] || !["powers","traits","gear"].includes(type)) return;
-    const root=this.element?.[0]||this.element;
-    const panel=root?.querySelector(`.list-panel[data-list-type="${type}"]`);
-    const rows=panel?.querySelector(".sh-list-editor-rows");
-    if(!rows) return;
-    rows.querySelector(".sh-list-editor-empty")?.remove();
-    rows.insertAdjacentHTML("beforeend",this._editorRowHTML(type,{}));
-    const row=rows.lastElementChild;
-    row?.querySelector(".sh-list-editor-name")?.focus();
+    if(!["powers","traits","gear"].includes(type)) return;
+    const s=mergeDefaults(this.actor.system), arr=clone(s[type]||[]);
+    arr.push({name:"",description:""});
+    await this.actor.update({["system."+type]:arr},{render:false});
+    this.render(false);
   }
   _toggleRowLock(row){
     if(!row) return;
-    const locked=!row.classList.contains("locked");
-    row.classList.toggle("locked",locked);
-    row.querySelectorAll("input,textarea").forEach(input=>input.readOnly=locked);
-    const button=row.querySelector(".row-lock");
-    if(button){button.classList.toggle("active",locked);button.title=locked?"Разблокировать для редактирования":"Заблокировать редактирование";}
+    const locked=row.classList.toggle("locked");
+    row.querySelectorAll(".sh-list-editor-name,.sh-list-editor-description").forEach(function(i){i.readOnly=!!locked;});
+    const gear=row.querySelector(".row-lock");
+    if(gear) gear.classList.toggle("active",!!locked);
   }
-  _deleteListRow(row){
-    if(!row) return;
-    const parent=row.parentElement;
-    row.remove();
-    if(parent && !parent.querySelector(".sh-list-editor-row")) parent.insertAdjacentHTML("beforeend",`<div class="sh-list-editor-empty empty">Пока нет записей. Нажмите ＋, чтобы добавить.</div>`);
-  }
-  async _saveListDraft(type){
-    const root=this.element?.[0]||this.element;
-    const panel=root?.querySelector(`.list-panel[data-list-type="${type}"]`);
-    const rows=[...(panel?.querySelectorAll(".sh-list-editor-row")||[])];
-    const arr=[];
-    for(let n=0;n<rows.length;n++){
-      const row=rows[n];
-      const name=String(row.querySelector(".sh-list-editor-name")?.value||"").trim();
-      if(!name){ui.notifications.warn(`В ${type==="powers"?"способностях":type==="traits"?"особенностях":"снаряжении"} есть запись без названия.`);row.querySelector(".sh-list-editor-name")?.focus();return false;}
-      const item={name,description:String(row.querySelector(".sh-list-editor-description")?.value||"")};
-      if(type==="powers"){
-        for(const field of ["movement","cost","range","damageType"]) item[field]=String(row.querySelector(`[data-field="${field}"]`)?.value||"");
-      }
-      arr.push(item);
-    }
-    await this.actor.update({[`system.${type}`]:arr},{render:false});
-    return true;
-  }
-  async _deleteListItem(type,index){
-    const s=mergeDefaults(this.actor.system),arr=clone(s[type]||[]);
-    if(index<0||index>=arr.length)return;
-    arr.splice(index,1);
-    await this.actor.update({[`system.${type}`]:arr});
-  }
-  async _sendItem(type,index){const item=mergeDefaults(this.actor.system)[type][index];if(!item)return;const esc=foundry.utils.escapeHTML,title=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";const meta=type==="powers"?[item.movement&&`<span>Перемещение: ${esc(item.movement)}</span>`,item.cost&&`<span>Стоимость: ${esc(item.cost)}</span>`,item.range&&`<span>Дальность: ${esc(item.range)}</span>`,item.damageType&&`<span>Тип урона: ${esc(item.damageType)}</span>`].filter(Boolean).join(""):"";await ChatMessage.create({speaker:ChatMessage.getSpeaker({actor:this.actor}),content:`<div class="sh-chat-card"><div class="chat-title">${title}</div><h3>${esc(item.name||"Без названия")}</h3>${meta?`<div class="power-meta">${meta}</div>`:""}<p>${esc(item.description||"")}</p></div>`});}
+  async _deleteListItem(type,index){const s=mergeDefaults(this.actor.system),arr=clone(s[type]);arr.splice(index,1);await this.actor.update({["system."+type]:arr},{render:false});this.render(false);}
+  async _sendItem(type,index){const item=mergeDefaults(this.actor.system)[type][index];if(!item)return;const esc=foundry.utils.escapeHTML,title=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";let meta="";if(type==="powers"){meta=[item.movement&&'<span>Перемещение: '+esc(item.movement)+'</span>',item.cost&&'<span>Стоимость: '+esc(item.cost)+'</span>',item.range&&'<span>Дальность: '+esc(item.range)+'</span>',item.damageType&&'<span>Тип урона: '+esc(item.damageType)+'</span>'].filter(Boolean).join("");}await ChatMessage.create({speaker:ChatMessage.getSpeaker({actor:this.actor}),content:'<div class="sh-chat-card"><div class="chat-title">'+title+'</div><h3>'+esc(item.name||"Без названия")+'</h3>'+(meta?'<div class="power-meta">'+meta+'</div>':'')+'<p>'+esc(item.description||"")+'</p></div>'});}
 }
 
 Hooks.once("init",()=>{
-  Handlebars.registerHelper("concat",(a,b)=>`${a??""}${b??""}`); Handlebars.registerHelper("eq",(a,b)=>a===b);
+  Handlebars.registerHelper("concat",function(a,b){return (a??"")+(b??"");}); Handlebars.registerHelper("eq",function(a,b){return a===b;});
   CONFIG.Dice.terms.s=SuperheroesDie;
   if(!CONFIG.Dice.types.includes(SuperheroesDie))CONFIG.Dice.types.push(SuperheroesDie);
   CONFIG.Dice.rolls.push(SuperheroesRoll);
   Actors.registerSheet("superheroes",SuperheroesActorSheet,{types:["character"],makeDefault:true,label:"Лист персонажа"});
 });
-Hooks.once("ready",()=>{if(game.dice3d)registerDiceSoNice(game.dice3d);});
-Hooks.once("diceSoNiceReady",dice3d=>registerDiceSoNice(dice3d));
+Hooks.once("ready",function(){if(game.dice3d)registerDiceSoNice(game.dice3d);});
+Hooks.once("diceSoNiceReady",function(dice3d){registerDiceSoNice(dice3d);});
 function registerDiceSoNice(dice3d){try{dice3d.addDicePreset({type:"s",labels:["★","2","3","4","5","6"],colorset:"red",system:"standard"});dice3d.addDicePreset({type:"d6",labels:["1","2","3","4","5","6"],colorset:"white",system:"standard"});}catch(err){console.warn("Супергерои | Dice So Nice",err);}}
-Hooks.once("ready",()=>{for(const actor of game.actors.contents){const s=mergeDefaults(actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);if(actor.system?.health?.value>hp)actor.update({"system.health.value":hp},{render:false});if(actor.system?.focus?.value>focus)actor.update({"system.focus.value":focus},{render:false});}});
-Hooks.on("preCreateActor",actor=>actor.updateSource({system:mergeDefaults(actor.system)}));
-Hooks.on("preUpdateActor",(actor,changes)=>{const merged=foundry.utils.mergeObject(clone(actor.system),changes.system||{},{inplace:false,recursive:true}),s=mergeDefaults(merged),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);if(s.health.value>hp)foundry.utils.setProperty(changes,"system.health.value",hp);if(s.focus.value>focus)foundry.utils.setProperty(changes,"system.focus.value",focus);if(foundry.utils.hasProperty(changes,"name"))foundry.utils.setProperty(changes,"system.biography.name",changes.name);});
-Hooks.on("renderChatMessage",(message,html)=>{const root=html[0]||html;root.querySelectorAll("button.retroEdgeMode").forEach(button=>button.addEventListener("click",async e=>{e.preventDefault();e.stopPropagation();try{await rerollSuperheroesDie(message.id,Number(e.currentTarget.dataset.index),e.currentTarget.dataset.retroAction);}catch(err){console.error("Супергерои | переброс",err);ui.notifications.error("Не удалось перебросить выбранную кость: "+err.message);}}));if(message.flags?.superheroes?.kind==="attack" && !root.querySelector("button.superheroes-damage")){const b=document.createElement("button");b.type="button";b.className="superheroes-damage";b.textContent="Урон";root.querySelector(".dice-total")?.after(b);} const damage=root.querySelector("button.superheroes-damage");if(damage)damage.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();rollDamageFromMessage(message.id);});});
+Hooks.once("ready",function(){for(const actor of game.actors.contents){const s=mergeDefaults(actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);if(actor.system?.health?.value>hp)actor.update({"system.health.value":hp},{render:false});if(actor.system?.focus?.value>focus)actor.update({"system.focus.value":focus},{render:false});}});
+Hooks.on("preCreateActor",function(actor){actor.updateSource({system:mergeDefaults(actor.system)});});
+Hooks.on("preUpdateActor",function(actor,changes){const merged=foundry.utils.mergeObject(clone(actor.system),changes.system||{},{inplace:false,recursive:true}),s=mergeDefaults(merged),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);if(s.health.value>hp)foundry.utils.setProperty(changes,"system.health.value",hp);if(s.focus.value>focus)foundry.utils.setProperty(changes,"system.focus.value",focus);if(foundry.utils.hasProperty(changes,"name"))foundry.utils.setProperty(changes,"system.biography.name",changes.name);});
+Hooks.on("renderChatMessage",function(message,html){const root=html[0]||html;root.querySelectorAll("button.retroEdgeMode").forEach(function(button){button.addEventListener("click",async function(e){e.preventDefault();e.stopPropagation();try{await rerollSuperheroesDie(message.id,Number(e.currentTarget.dataset.index),e.currentTarget.dataset.retroAction);}catch(err){console.error("Супергерои | переброс",err);ui.notifications.error("Не удалось перебросить выбранную кость: "+err.message);}});});if(message.flags?.superheroes?.kind==="attack"&&!root.querySelector("button.superheroes-damage")){const b=document.createElement("button");b.type="button";b.className="superheroes-damage";b.textContent="Урон";root.querySelector(".dice-total")?.after(b);}const damage=root.querySelector("button.superheroes-damage");if(damage)damage.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();rollDamageFromMessage(message.id);});});
 window.SuperheroesSystem={SuperheroesDie,SuperheroesRoll,createCheckRoll,createNonCombatRoll,createAttackRoll,rerollSuperheroesDie};
