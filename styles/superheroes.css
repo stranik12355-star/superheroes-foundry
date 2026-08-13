@@ -41,19 +41,18 @@
 .sh-list-editor-row-tools .row-lock.active{color:#e7b13a!important;opacity:1!important}
 .sh-list-editor-row.locked .sh-list-editor-name,.sh-list-editor-row.locked .sh-list-editor-description{background:#d9d9d9!important;color:#666!important}
 
-/* =====================================================
-   СИСТЕМА КУБОВ  (из Marvel Multiverse, адаптация под superheroes)
-   кубы справа налево, без картинок — чистый CSS
-   ===================================================== */
+/* ===== КУБЫ — точная копия Marvel, адаптирована под твой проект ===== */
+/* без картинок — чистый CSS, цвета #b52f39 вместо #e41d18 */
 
-/* Контейнер тотала и формулы */
-.superheroes .dice-result .dice-formula,
-.superheroes .dice-result .dice-total{
+/* Формула и тотал */
+.marvel-roll .dice-formula,
+.marvel-roll .dice-total{
   align-items:center;
   background:#b52f39;
   border-radius:0;
   border:none;
-  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);
+  box-shadow:none;
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 100%,12px 100%);
   color:#fff;
   display:flex;
   font-size:12px;
@@ -63,38 +62,152 @@
   line-height:1;
   margin:0;
   overflow:hidden;
-  padding:8px;
+  padding:10px;
   position:relative;
   text-transform:uppercase;
   width:100%;
 }
-.superheroes .dice-result .dice-formula::before,
-.superheroes .dice-result .dice-total::before{
+.marvel-roll .dice-formula::before,
+.marvel-roll .dice-total::before{
   background-color:#1c1c22;
   bottom:2px;
-  clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);
+  clip-path:polygon(0 0,calc(100% - 12px) 0,100% 100%,12px 100%);
   content:"";
   left:2px;
   position:absolute;
   right:2px;
   top:2px;
 }
-.superheroes .dice-result .dice-formula span,
-.superheroes .dice-result .dice-total span{
+.marvel-roll .dice-formula span,
+.marvel-roll .dice-total span{
   color:#eee;
   cursor:text;
   user-select:auto;
   z-index:1;
 }
-.superheroes .dice-result .dice-total{font-size:18px;margin-top:4px}
+.marvel-roll .dice-total{font-size:20px;margin-top:4px}
 
-/* Кнопка Damage */
-.superheroes .damage{
+/* Показать контейнер кубов (Foundry прячет по умолчанию) */
+.marvel-roll .dice-tooltip{
+  display:flex !important;
+  gap:6px;
+  height:initial !important;
+  justify-content:center;
+  margin:6px 0 0 !important;
+  padding:8px !important;
+}
+.marvel-roll .dice-tooltip .tooltip-part{
+  flex:1 1 auto;
+}
+
+/* Контейнер для кубов */
+.marvel-roll .dice{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  justify-content:center;
+}
+
+/* Ряд кубов — справа налево */
+.marvel-roll .dice .dice-rolls{
+  align-items:center;
+  align-self:start;
+  display:flex !important;
+  flex-direction:row-reverse !important;
+  gap:8px !important;
+  justify-content:center !important;
+  margin:0;
+  padding:0;
+  position:relative;
+}
+
+/* Один обычный куб */
+.marvel-roll .dice .dice-rolls .roll{
+  align-items:center;
+  background:linear-gradient(145deg,#f2f2f5,#dbdde3);
+  background-image:none !important;
+  border:2px solid #c0c4cc;
+  border-radius:8px;
+  color:#1c1c22;
+  display:flex;
+  font-size:22px;
+  font-weight:700;
+  height:50px;
+  justify-content:center;
+  margin:0;
+  position:relative;
+  text-shadow:none;
+  width:50px;
+  z-index:1;
+  box-shadow:0 1px 3px rgba(0,0,0,.15);
+}
+
+/* Особая кость (со звездой) */
+.marvel-roll .dice .dice-rolls .roll.marvel-roll{
+  background:linear-gradient(145deg,#d53b45,#a6242e);
+  background-image:none !important;
+  border-color:#b52f39;
+  color:#fff;
+  box-shadow:0 0 9px rgba(200,45,55,.35);
+  text-shadow:none;
+}
+
+/* Fantastic */
+.marvel-roll .dice .dice-rolls .roll.marvel-roll.fantastic{
+  font-size:28px;
+  color:#ffd700 !important;
+  text-shadow:0 0 6px rgba(255,215,0,.5);
+  background:linear-gradient(145deg,#c7353f,#9c222c);
+  background-image:none !important;
+}
+
+/* Скрыть текст на Fantastic (если будет иконка позже) */
+.marvel-roll .dice .dice-rolls .roll.marvel-roll.fantastic span{
+  visibility:visible;
+}
+
+/* Отбракованный куб */
+.marvel-roll .dice .dice-rolls .roll.discarded,
+.marvel-roll .dice .dice-rolls .roll.min{
+  opacity:.25 !important;
+  filter:grayscale(1) !important;
+  z-index:0;
+}
+
+/* Кнопки Edge/Trouble */
+.marvel-roll .reroll-buttons{
+  align-self:end;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.marvel-roll .roll-edge,
+.marvel-roll .roll-trouble{
+  background:#8b0502;
+  border:1px solid #b52f39;
+  color:white;
+  font-size:11px;
+  font-weight:700;
+  line-height:1;
+  margin:0;
+  padding:5px 8px;
+  text-decoration:none;
+  text-transform:uppercase;
+  border-radius:4px;
+  cursor:pointer;
+}
+.marvel-roll .roll-edge:hover,
+.marvel-roll .roll-trouble:hover{
+  background:#b52f39;
+}
+
+/* Кнопка Damage (урон при атаке) */
+.marvel-roll .damage{
   background:#b52f39;
   border:2px solid #b52f39;
   border-radius:4px;
-  color:#fff;
-  font-size:15px;
+  color:white;
+  font-size:16px;
   font-weight:700;
   line-height:1;
   margin:8px 0 0;
@@ -103,181 +216,8 @@
   text-transform:uppercase;
   width:100%;
   cursor:pointer;
-  transition:all .3s;
 }
-.superheroes .damage:hover{background:#8b1d26;border-color:#8b1d26}
-
-/* Tooltip — разбор кубов */
-.superheroes-tooltip{
-  display:flex!important;
-  flex-direction:column;
-  gap:8px;
-  justify-content:center;
-  margin:0!important;
-  padding:8px!important;
-}
-
-/* Ряд кубов — СПРАВА НАЛЕВО */
-.superheroes-tooltip .dice-rolls,
-.superheroes-tooltip .superheroes-dice-tooltip-row{
-  display:flex!important;
-  flex-direction:row-reverse!important;
-  justify-content:center!important;
-  gap:8px!important;
-  list-style:none;
-  margin:0;
-  padding:0;
-}
-
-/* Один куб */
-.superheroes-tooltip .dice-rolls .roll,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll{
-  width:48px!important;
-  height:48px!important;
-  display:grid!important;
-  place-items:center!important;
-  border:2px solid #c0c4cc!important;
-  border-radius:8px!important;
-  background:linear-gradient(145deg,#f2f2f5,#dbdde3)!important;
-  color:#1c1c22!important;
-  font-weight:700!important;
-  font-size:20px!important;
-  box-shadow:0 1px 3px rgba(0,0,0,.15)!important;
-  position:relative;
-}
-
-/* Особая кость (со звездой, в центре) */
-.superheroes-tooltip .dice-rolls .roll.superheroes-middle-die,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{
-  border-color:#b52f39!important;
-  background:linear-gradient(145deg,#d53b45,#a6242e)!important;
-  color:#fff!important;
-  box-shadow:0 0 9px rgba(200,45,55,.35)!important;
-}
-
-/* Fantastic — критический успех */
-.superheroes-tooltip .dice-rolls .roll.fantastic,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.fantastic{
-  font-size:27px!important;
-  color:#ffd700!important;
-  text-shadow:0 0 6px rgba(255,215,0,.5)!important;
-}
-
-/* Отбракованный куб (Edge/Trouble) */
-.superheroes-tooltip .dice-rolls .roll.discarded,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.discarded,
-.superheroes-tooltip .dice-rolls .roll.min,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.min{
-  opacity:.25!important;
-  filter:grayscale(1);
-}
-
-/* Кнопки Edge / Trouble */
-.superheroes-tooltip .reroll-buttons,
-.superheroes-reroll-buttons,
-.reroll-buttons{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:5px;
-  margin-top:6px;
-}
-.superheroes-tooltip .reroll-buttons .dice-button,
-.superheroes-reroll-cell,
-.superheroes-reroll-group{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-.roll-edge,.roll-trouble,.superheroes-reroll-cell button,.superheroes-reroll-group button{
-  font-size:8px;
-  padding:4px 6px;
-  border:1px solid #b52f39;
-  background:#17171b;
-  color:#aaa;
-  border-radius:4px;
-  cursor:pointer;
-  text-transform:uppercase;
-  letter-spacing:.5px;
-}
-.roll-edge:hover,.roll-trouble:hover,.superheroes-reroll-cell button:hover,.superheroes-reroll-group button:hover{
-  background:#241417;
-  border-color:#d84953;
-  color:#fff;
-}
-/* ===== КУБЫ — видимые, без картинок (чистый CSS) ===== */
-
-/* Ряд кубов: справа налево */
-.marvel-roll .dice-tooltip .dice-rolls{
-  display:flex !important;
-  flex-direction:row-reverse !important;
-  justify-content:center !important;
-  gap:8px !important;
-  list-style:none;
-  margin:0;
-  padding:8px !important;
-}
-
-/* Один куб (обычный) */
-.marvel-roll .dice-tooltip .dice-rolls .roll{
-  width:48px !important;
-  height:48px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  border:2px solid #c0c4cc !important;
-  border-radius:8px !important;
-  background:linear-gradient(145deg,#f2f2f5,#dbdde3) !important;
-  color:#1c1c22 !important;
-  font-size:20px !important;
-  font-weight:700 !important;
-  box-shadow:0 1px 3px rgba(0,0,0,.15) !important;
-  line-height:1 !important;
-}
-
-/* Особая кость (со звездой) — средняя, красная */
-.marvel-roll .dice-tooltip .dice-rolls .roll.marvel-roll,
-.marvel-roll .dice-tooltip .dice-rolls .roll.superheroes-middle-die{
-  border-color:#b52f39 !important;
-  background:linear-gradient(145deg,#d53b45,#a6242e) !important;
-  color:#fff !important;
-  box-shadow:0 0 9px rgba(200,45,55,.35) !important;
-}
-
-/* Fantastic — критический успех (золотой) */
-.marvel-roll .dice-tooltip .dice-rolls .roll.fantastic{
-  font-size:27px !important;
-  color:#ffd700 !important;
-  text-shadow:0 0 6px rgba(255,215,0,.5) !important;
-}
-
-/* Отбракованный куб при Edge/Trouble */
-.marvel-roll .dice-tooltip .dice-rolls .roll.discarded,
-.marvel-roll .dice-tooltip .dice-rolls .roll.min{
-  opacity:.25 !important;
-  filter:grayscale(1) !important;
-}
-/* Кнопка урона при атаке — в цвет заготовки Damage */
-.marvel-roll .damage,
-.superheroes .damage,
-.sh-chat-card button[data-action="damage"],
-.marvel-roll button.damage-roll{
-  background:#b52f39 !important;
-  border:2px solid #b52f39 !important;
-  border-radius:4px !important;
-  color:#fff !important;
-  font-size:15px !important;
-  font-weight:700 !important;
-  line-height:1 !important;
-  margin:8px 0 0 !important;
-  padding:9px !important;
-  text-transform:uppercase !important;
-  width:100% !important;
-  cursor:pointer !important;
-  transition:all .3s !important;
-}
-.marvel-roll .damage:hover,
-.superheroes .damage:hover,
-.sh-chat-card button[data-action="damage"]:hover{
-  background:#8b1d26 !important;
-  border-color:#8b1d26 !important;
+.marvel-roll .damage:hover{
+  background:#8b1d26;
+  border-color:#8b1d26;
 }
