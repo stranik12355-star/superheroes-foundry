@@ -385,3 +385,7 @@
   justify-content:flex-start !important;
   text-align:left !important;
 }
+/* ===== При блокировке скрываем описание, остаётся только название ===== */
+.sh-list-editor-row.locked .sh-list-editor-description{
+  display:none !important;
+}
