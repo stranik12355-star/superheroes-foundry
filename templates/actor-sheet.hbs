@@ -37,13 +37,12 @@
   <div class="main-column main-column-left">
  <div class="stats-panel">
   <div class="panel-title"><span>ХАРАКТЕРИСТИКИ</span><span class="panel-hint">Нажмите на вне боя или атаку для броска</span></div>
-  <div class="stat-columns"><span></span><span>ОСНОВНАЯ</span><span>ЗАЩИТА</span><span>ПОПАДАНИЕ</span><span>ВНЕ БОЯ</span><span>АТАКА</span><span></span></div>
+  <div class="stat-columns"><span></span><span>ОСНОВНАЯ</span><span>ЗАЩИТА</span><span>ВНЕ БОЯ</span><span>АТАКА</span><span></span></div>
   {{#each derived.stats as |s key|}}
   <div class="stat-row">
    <div class="stat-name"><i class="stat-icon stat-icon-{{key}}" aria-hidden="true"></i><span>{{localize (concat "SUPERHEROES.Stat." key)}}</span></div>
    <div class="stat-value stat-inactive">{{s.value}}</div>
    <div class="stat-derived stat-inactive"><span>{{s.defense}}</span></div>
-   <div class="stat-derived stat-inactive"><span>{{s.hit}}</span></div>
    <button type="button" class="stat-derived clickable" data-action="roll-noncombat" data-stat="{{key}}" title="Бросок вне боя"><span>{{s.nonCombat}}</span></button>
    <button type="button" class="attack-button" data-action="roll-attack" data-stat="{{key}}" title="Атака"><span>{{s.hit}}</span></button>
    <button type="button" class="stat-settings" data-action="edit-stat" data-stat="{{key}}" title="Настройки характеристики">⚙</button>
@@ -54,7 +53,7 @@
   <section class="list-panel gear-panel" data-list-type="gear">
    <div class="panel-title">
     <span>СНАРЯЖЕНИЕ</span>
-    <button type="button" class="list-edit-toggle {{#if derived.editing.gear}}active{{/if}}" data-action="toggle-edit" data-type="gear" title="Редактировать снаряжение">＋</button>
+    <button type="button" class="list-edit-toggle {{#if derived.editing.gear}}active{{/if}}" data-action="toggle-edit" data-type="gear" title="Редактировать снаряжение"></button>
    </div>
    {{#if derived.editing.gear}}
     <div class="sh-list-editor" data-editor-type="gear">
@@ -91,7 +90,7 @@
   <section class="list-panel" data-list-type="powers">
    <div class="panel-title">
     <span>СПОСОБНОСТИ</span>
-    <button type="button" class="list-edit-toggle {{#if derived.editing.powers}}active{{/if}}" data-action="toggle-edit" data-type="powers" title="Редактировать способности">＋</button>
+    <button type="button" class="list-edit-toggle {{#if derived.editing.powers}}active{{/if}}" data-action="toggle-edit" data-type="powers" title="Редактировать способности"></button>
    </div>
    {{#if derived.editing.powers}}
     <div class="sh-list-editor" data-editor-type="powers">
@@ -128,7 +127,7 @@
   <section class="list-panel" data-list-type="traits">
    <div class="panel-title">
     <span>ОСОБЕННОСТИ</span>
-    <button type="button" class="list-edit-toggle {{#if derived.editing.traits}}active{{/if}}" data-action="toggle-edit" data-type="traits" title="Редактировать особенности">＋</button>
+    <button type="button" class="list-edit-toggle {{#if derived.editing.traits}}active{{/if}}" data-action="toggle-edit" data-type="traits" title="Редактировать особенности"></button>
    </div>
    {{#if derived.editing.traits}}
     <div class="sh-list-editor" data-editor-type="traits">
