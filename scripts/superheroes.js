@@ -195,17 +195,23 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   if(game.dice3d?.showForRoll){try{await game.dice3d.showForRoll(newRoll,game.user,true);}catch(err){console.warn("Супергерои | Dice3D",err);}}
   return roll;
 }
+
+/* ===== ИЗМЕНЕНО: теперь бросок урона показывает кубик 1d6 ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
   const flags=message.flags?.superheroes||{};
   const multiplier=Math.max(1,Number(flags.damageMultiplier)||1), stable=Number(flags.stable)||0;
   const strengthMod=Number(flags.ability)||0;
-  const damageRoll=new Roll("1d6"); await damageRoll.evaluate({async:true});
-  const die=damageRoll.dice[0];
-  const total=Number(die.total||0)*multiplier+strengthMod+stable;
-  await damageRoll.toMessage({speaker:message.speaker,flavor:"УРОН — ×"+multiplier+" + "+(strengthMod+stable),content:'<div class="sh-damage-result"><b>Урон:</b> '+total+'<br><small>1d6 × '+multiplier+' + '+(strengthMod+stable)+'</small></div>'});
+  const bonus=strengthMod+stable;
+  const damageRoll=new SuperheroesRoll(`(1d6 * ${multiplier}) + ${bonus}`);
+  await damageRoll.evaluate({async:true});
+  return damageRoll.toMessage({
+    speaker:message.speaker,
+    flavor:"УРОН — ×"+multiplier+" + "+bonus
+  });
 }
+
 function showDialog(content,title,callback){new Dialog({title,content,buttons:{save:{label:"Сохранить",callback},cancel:{label:"Отмена"}},default:"save"}).render(true);}
 function safe(v){return foundry.utils.escapeHTML(v??"");}
 
