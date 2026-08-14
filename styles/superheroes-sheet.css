@@ -39,98 +39,23 @@
 @media(max-width:800px){.lists-grid{grid-template-columns:1fr}.stat-columns,.stat-row{grid-template-columns:1.4fr 55px 55px 60px 65px 45px 30px}.bio-text-grid{grid-template-columns:1fr}.bio-grid{grid-template-columns:repeat(2,1fr)}}
 
 /* ===== ИСПРАВЛЕНИЕ 1: Снаряжение как способности ===== */
-.superheroes.sheet .gear-panel .list-item{
-  display:block !important;
-  width:100% !important;
-  vertical-align:baseline !important;
-}
-.superheroes.sheet .gear-panel .list-items{
-  min-height:unset !important;
-}
-.superheroes.sheet .gear-panel .list-items .list-view-item .item-head{
-  min-height:34px !important;
-  padding:0 9px !important;
-}
-.superheroes.sheet .gear-panel .list-view-item .item-title{
-  font-size:12px !important;
-  text-transform:none !important;
-}
+.superheroes.sheet .gear-panel .list-item{display:block !important;width:100% !important;vertical-align:baseline !important}
+.superheroes.sheet .gear-panel .list-items{min-height:unset !important}
+.superheroes.sheet .gear-panel .list-items .list-view-item .item-head{min-height:34px !important;padding:0 9px !important}
+.superheroes.sheet .gear-panel .list-view-item .item-title{font-size:12px !important;text-transform:none !important}
 
 /* ===== ИСПРАВЛЕНИЕ 2: Защита и попадание — по центру ===== */
 .superheroes.sheet .stat-columns span:nth-child(2),
 .superheroes.sheet .stat-columns span:nth-child(3),
 .superheroes.sheet .stat-columns span:nth-child(4),
-.superheroes.sheet .stat-columns span:nth-child(5){
-  text-align:center !important;
-}
-.superheroes.sheet .stat-derived{
-  text-align:center !important;
-  justify-content:center !important;
-}
+.superheroes.sheet .stat-columns span:nth-child(5){text-align:center !important}
+.superheroes.sheet .stat-derived{text-align:center !important;justify-content:center !important}
 
-/* ===== ИСПРАВЛЕНИЕ 3: Иконки характеристик ===== */
-.superheroes.sheet .stat-name{
-  display:flex !important;
-  align-items:center !important;
-  gap:9px !important;
-  min-width:0 !important;
-  font-size:15px !important;
-  font-weight:800 !important;
-  letter-spacing:.25px !important;
-  text-transform:uppercase !important;
-  white-space:nowrap !important;
-  color:#eee !important;
-}
-.stat-icon{
-  flex:0 0 27px !important;
-  width:27px !important;
-  height:27px !important;
-  display:grid !important;
-  place-items:center !important;
-  color:#f2f2f4 !important;
-  font-family:"Font Awesome 5 Free","Font Awesome 6 Free",sans-serif !important;
-  font-size:21px !important;
-  font-weight:900 !important;
-  line-height:1 !important;
-  background:linear-gradient(135deg,#8f2831,#5e181f) !important;
-  border-radius:5px !important;
-  box-shadow:0 1px 2px rgba(0,0,0,.3) !important;
-}
-.stat-icon-strength::before{content:"\f6de" !important}
-.stat-icon-agility::before{content:"\f70c" !important}
-.stat-icon-endurance::before{content:"\f3ed" !important}
-.stat-icon-vigilance::before{content:"\f06e" !important}
-.stat-icon-ego::before{content:"\f2bd" !important}
-.stat-icon-logic::before{content:"\f5dc" !important}
-
-/* ===== ИСПРАВЛЕНИЕ 4: Гайка вместо + ===== */
-.list-edit-toggle{
-  width:30px !important;
-  height:28px !important;
-  border:1px solid #44454c !important;
-  border-radius:5px !important;
-  background:transparent !important;
-  color:#aaa !important;
-  cursor:pointer !important;
-  display:grid !important;
-  place-items:center !important;
-  font-size:18px !important;
-  line-height:1 !important;
-  padding:0 !important;
-  transition:all .3s !important;
-}
-.list-edit-toggle::before{
-  content:"\2699" !important;
-}
-.list-edit-toggle:hover,
-.list-edit-toggle.active{
-  border-color:#b7323c !important;
-  background:#211416 !important;
-  color:#fff !important;
-}
-.list-edit-toggle.active::before{
-  color:#e7b13a !important;
-}
+/* ===== ИСПРАВЛЕНИЕ 3: Гайка вместо + ===== */
+.list-edit-toggle{width:30px !important;height:28px !important;border:1px solid #44454c !important;border-radius:5px !important;background:transparent !important;color:#aaa !important;cursor:pointer !important;display:grid !important;place-items:center !important;font-size:18px !important;line-height:1 !important;padding:0 !important;transition:all .3s !important}
+.list-edit-toggle::before{content:"\2699" !important}
+.list-edit-toggle:hover,.list-edit-toggle.active{border-color:#b7323c !important;background:#211416 !important;color:#fff !important}
+.list-edit-toggle.active::before{color:#e7b13a !important}
 
 /* ===== ОСТАЛЬНАЯ СТИЛИЗАЦИЯ (твоя без изменений) ===== */
 .superheroes-roll-title{font-weight:700;color:#fff;padding:4px 0 7px;text-transform:uppercase;letter-spacing:.8px}
@@ -197,58 +122,15 @@
 
 /* ===== Кубы справа налево ===== */
 .superheroes-tooltip .superheroes-dice-tooltip-row,
-.superheroes-tooltip .dice-rolls{
-  display:flex;
-  flex-direction:row-reverse;
-  justify-content:center;
-  gap:8px;
-}
+.superheroes-tooltip .dice-rolls{display:flex;flex-direction:row-reverse;justify-content:center;gap:8px}
 .superheroes-tooltip .dice-rolls .roll,
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll{
-  width:46px;height:46px;
-  display:grid;place-items:center;
-  border:2px solid #8b8f98;
-  border-radius:7px;
-  background:linear-gradient(145deg,#e7e8ec,#d2d4da);
-  color:#1a1a1f;
-  font-weight:700;
-  font-size:20px;
-}
-.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{
-  border-color:#b82c36;
-  background:linear-gradient(145deg,#d53b45,#a6242e);
-  color:#fff;
-  box-shadow:0 0 9px rgba(200,45,55,.35);
-}
-.superheroes-tooltip .dice-rolls .roll.fantastic{
-  font-size:26px;
-}
-.superheroes-reroll-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:5px;
-  margin-top:8px;
-}
-.superheroes-reroll-cell{
-  display:flex;
-  flex-direction:column;
-  gap:3px;
-}
-.superheroes-reroll-cell button{
-  font-size:8px;
-  padding:3px 4px;
-  border:1px solid #34353b;
-  background:#17171b;
-  color:#ccc;
-  border-radius:4px;
-  cursor:pointer;
-  line-height:1.2;
-}
-.superheroes-reroll-cell button:hover{
-  border-color:#b82c36;
-  color:#fff;
-  background:#211416;
-}
+.superheroes-tooltip .superheroes-dice-tooltip-row .roll{width:46px;height:46px;display:grid;place-items:center;border:2px solid #8b8f98;border-radius:7px;background:linear-gradient(145deg,#e7e8ec,#d2d4da);color:#1a1a1f;font-weight:700;font-size:20px}
+.superheroes-tooltip .superheroes-dice-tooltip-row .roll.superheroes-roll{border-color:#b82c36;background:linear-gradient(145deg,#d53b45,#a6242e);color:#fff;box-shadow:0 0 9px rgba(200,45,55,.35)}
+.superheroes-tooltip .dice-rolls .roll.fantastic{font-size:26px}
+.superheroes-reroll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px}
+.superheroes-reroll-cell{display:flex;flex-direction:column;gap:3px}
+.superheroes-reroll-cell button{font-size:8px;padding:3px 4px;border:1px solid #34353b;background:#17171b;color:#ccc;border-radius:4px;cursor:pointer;line-height:1.2}
+.superheroes-reroll-cell button:hover{border-color:#b82c36;color:#fff;background:#211416}
 
 /* ===== ФИНАЛЬНАЯ КОМПОНОВКА ===== */
 .tab-panel{padding:12px 12px 14px}
@@ -312,91 +194,60 @@
 .superheroes.sheet .main-column-left .gear-panel .list-items{min-height:75px!important}
 .superheroes.sheet .stat-name span{text-transform:uppercase!important}
 @media(max-width:720px){.superheroes.sheet .main-layout{display:flex!important;flex-direction:column!important}.superheroes.sheet .main-column,.superheroes.sheet .main-column-left,.superheroes.sheet .main-column-right{width:100%!important;flex:0 0 100%!important}}
+
 /* ===== Значение основной характеристики — по центру ===== */
-.superheroes.sheet .stat-value{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  text-align:center !important;
-  padding:0 !important;
-}
-/* Страховка: все колонки значений по центру */
-.superheroes.sheet .stat-value,
-.superheroes.sheet .stat-derived{
-  text-align:center !important;
-}
-/* Заголовки колонок тоже центрируем (кроме названия) */
-.superheroes.sheet .stat-columns span:not(:first-child){
-  text-align:center !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-}
+.superheroes.sheet .stat-value{display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;padding:0 !important}
+.superheroes.sheet .stat-value,.superheroes.sheet .stat-derived{text-align:center !important}
+.superheroes.sheet .stat-columns span:not(:first-child){text-align:center !important;display:flex !important;align-items:center !important;justify-content:center !important}
+
 /* ===== ФИНАЛЬНЫЕ ПРАВКИ ===== */
-
 /* 1) ЧИСТАЯ ГАЙКА — без +, ровно по центру (все панели) */
-.superheroes.sheet .list-edit-toggle{
-  font-size:0 !important;              /* прячем возможный текст */
-  width:30px !important;
-  height:28px !important;
-  display:grid !important;
-  place-items:center !important;
-  border:1px solid #44454c !important;
-  border-radius:5px !important;
-  background:transparent !important;
-  cursor:pointer !important;
-  padding:0 !important;
-  margin:0 !important;
-  line-height:1 !important;
-  color:transparent !important;
-  text-shadow:none !important;
-  overflow:hidden !important;
-}
-.superheroes.sheet .list-edit-toggle::before{
-  content:"\2699";
-  font-size:18px;
-  line-height:1;
-  color:#aaa;
-  display:block;
-  text-align:center;
-}
-.superheroes.sheet .list-edit-toggle:hover::before,
-.superheroes.sheet .list-edit-toggle.active::before{color:#e7b13a;}
-.superheroes.sheet .list-edit-toggle:hover,
-.superheroes.sheet .list-edit-toggle.active{border-color:#b7323c !important;background:#211416 !important;}
-
+.superheroes.sheet .list-edit-toggle{font-size:0 !important;width:30px !important;height:28px !important;display:grid !important;place-items:center !important;border:1px solid #44454c !important;border-radius:5px !important;background:transparent !important;cursor:pointer !important;padding:0 !important;margin:0 !important;line-height:1 !important;color:transparent !important;text-shadow:none !important;overflow:hidden !important}
+.superheroes.sheet .list-edit-toggle::before{content:"\2699";font-size:18px;line-height:1;color:#aaa;display:block;text-align:center}
+.superheroes.sheet .list-edit-toggle:hover::before,.superheroes.sheet .list-edit-toggle.active::before{color:#e7b13a}
+.superheroes.sheet .list-edit-toggle:hover,.superheroes.sheet .list-edit-toggle.active{border-color:#b7323c !important;background:#211416 !important}
 /* 2) ХАРАКТЕРИСТИКИ — без колонки "Попадание" (6 колонок) */
-.superheroes.sheet .stat-columns,
-.superheroes.sheet .stat-row{
-  grid-template-columns:minmax(135px,1fr) 52px 52px 54px 54px 26px !important;
-}
-/* всё по центру, кроме названия */
+.superheroes.sheet .stat-columns,.superheroes.sheet .stat-row{grid-template-columns:minmax(135px,1fr) 52px 52px 54px 54px 26px !important}
 .superheroes.sheet .stat-columns span:not(:first-child),
 .superheroes.sheet .stat-row > .stat-value,
 .superheroes.sheet .stat-row > .stat-derived,
 .superheroes.sheet .stat-row > .attack-button,
-.superheroes.sheet .stat-row > .stat-settings{
-  display:flex !important;
+.superheroes.sheet .stat-row > .stat-settings{display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important}
+.superheroes.sheet .stat-row > .stat-name{justify-content:flex-start !important;text-align:left !important}
+
+/* ===== При блокировке скрываем описание, остаётся только название ===== */
+.sh-list-editor-row.locked .sh-list-editor-description{display:none !important}
+/* ===== При блокировке название тоже не редактируется ===== */
+.sh-list-editor-row.locked .sh-list-editor-name{pointer-events:none !important;user-select:none !important;cursor:default !important;background:#26262b !important;color:#aaa !important;border-color:#3a3a41 !important;box-shadow:none !important;opacity:.85 !important}
+
+/* =====================================================
+   ИКОНКИ ХАРАКТЕРИСТИК — ЧИСТО БЕЛЫЕ, БЕЗ РАМКИ, СУРОВЫЕ (финал)
+   Этот блок перекрывает все предыдущие определения иконок
+   ===================================================== */
+.superheroes.sheet .stat-icon{
+  background:none !important;
+  border:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  outline:none !important;
+  flex:0 0 26px !important;
+  width:26px !important;
+  height:26px !important;
+  display:inline-flex !important;
   align-items:center !important;
   justify-content:center !important;
-  text-align:center !important;
+  font-size:22px !important;
+  font-weight:900 !important;
+  line-height:1 !important;
+  margin-right:2px !important;
+  color:#ffffff !important;
+  -webkit-text-stroke:1px #000 !important;
+  paint-order:stroke fill !important;
+  text-shadow:0 2px 3px rgba(0,0,0,.7) !important;
 }
-.superheroes.sheet .stat-row > .stat-name{
-  justify-content:flex-start !important;
-  text-align:left !important;
-}
-/* ===== При блокировке скрываем описание, остаётся только название ===== */
-.sh-list-editor-row.locked .sh-list-editor-description{
-  display:none !important;
-}
-/* ===== При блокировке название тоже не редактируется ===== */
-.sh-list-editor-row.locked .sh-list-editor-name{
-  pointer-events:none !important;       /* нельзя кликнуть и выбрать */
-  user-select:none !important;
-  cursor:default !important;
-  background:#26262b !important;        /* серо-блокированный вид */
-  color:#aaa !important;
-  border-color:#3a3a41 !important;
-  box-shadow:none !important;
-  opacity:.85 !important;
-}
+.superheroes.sheet .stat-icon-strength::before{content:"\f6de" !important;font-size:24px !important}   /* кулак */
+.superheroes.sheet .stat-icon-agility::before{content:"\f70c" !important}                              /* бегущий силуэт */
+.superheroes.sheet .stat-icon-endurance::before{content:"\f3ed" !important}                            /* щит */
+.superheroes.sheet .stat-icon-vigilance::before{content:"\f06e" !important}                            /* глаз */
+.superheroes.sheet .stat-icon-ego::before{content:"\f007" !important;font-size:23px !important}        /* лицо/силуэт */
+.superheroes.sheet .stat-icon-logic::before{content:"\f5dc" !important}                                /* мозг */
