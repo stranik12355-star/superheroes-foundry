@@ -304,3 +304,25 @@
   font-size:18px !important;
   margin-top:4px;
 }
+/* ===== Правки: регистр в линии + красный итог ===== */
+.superheroes .dice-formula{
+  text-transform:none !important;      /* убрать капс в названии броска */
+}
+.superheroes .dice-formula span{
+  text-transform:none !important;
+  letter-spacing:.3px;
+}
+/* Итоговое поле — красная плашка с белым числом */
+.superheroes .dice-total{
+  background:#b52f39 !important;
+  color:#fff !important;
+}
+.superheroes .dice-total::before{
+  display:none !important;            /* убрать белую подложку итога */
+}
+.superheroes .dice-total span{
+  background:none !important;
+  clip-path:none !important;
+  color:#fff !important;
+  font-size:20px;
+}
