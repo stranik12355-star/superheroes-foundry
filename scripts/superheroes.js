@@ -196,24 +196,23 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== ИСПРАВЛЕНО: урон в едином стиле чата ===== */
+/* ===== ИСПРАВЛЕНО: урон — слово "УРОН", стабильный НЕ умножается ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
   const flags=message.flags?.superheroes||{};
   const multiplier=Math.max(1,Number(flags.damageMultiplier)||1), stable=Number(flags.stable)||0;
   const strengthMod=Number(flags.ability)||0;
-  const bonus=strengthMod+stable;
 
   const damageRoll=new Roll("1d6");
   await damageRoll.evaluate({async:true});
   const dieResult=damageRoll.dice[0]?.results?.[0]?.result ?? 1;
-  const total=dieResult*multiplier+bonus;
+
+  const total=dieResult*multiplier+strengthMod+stable;
 
   await damageRoll.toMessage({
     speaker:message.speaker,
-    flavor:"УРОН — ×"+multiplier+" + "+bonus,
-    content:'<div class="superheroes dice-roll"><div class="dice-result"><div class="dice-formula"><span>(1d6 × '+multiplier+') + ('+bonus+')</span></div><div class="dice-tooltip" style="display:flex!important;justify-content:center;gap:8px;padding:8px!important;margin:0!important"><ol class="dice-rolls" style="display:flex!important;justify-content:center;gap:8px;list-style:none;margin:0;padding:0"><li class="roll die d6" style="width:48px!important;height:48px!important;display:grid!important;place-items:center!important;border:2px solid #c0c4cc!important;border-radius:8px!important;background:linear-gradient(145deg,#f2f2f5,#dbdde3)!important;color:#1c1c22!important;font-weight:700!important;font-size:22px!important;line-height:1!important">'+dieResult+'</li></ol></div><h4 class="dice-total" style="align-items:center;background:#b52f39;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);color:#fff;display:flex;font-size:18px;font-weight:600;justify-content:center;margin:4px 0 0;padding:8px;position:relative;text-transform:uppercase;width:100%"><span style="z-index:1;color:#eee;">'+total+'</span></h4></div></div>'
+    content:'<div class="superheroes dice-roll"><div class="dice-result"><div class="dice-formula"><span>УРОН</span></div><div class="dice-tooltip" style="display:flex!important;justify-content:center;gap:8px;padding:8px!important;margin:0!important"><ol class="dice-rolls" style="display:flex!important;justify-content:center;gap:8px;list-style:none;margin:0;padding:0"><li class="roll die d6" style="width:48px!important;height:48px!important;display:grid!important;place-items:center!important;border:2px solid #c0c4cc!important;border-radius:8px!important;background:linear-gradient(145deg,#f2f2f5,#dbdde3)!important;color:#1c1c22!important;font-weight:700!important;font-size:22px!important;line-height:1!important">'+dieResult+'</li></ol></div><h4 class="dice-total" style="align-items:center;background:#b52f39;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);color:#fff;display:flex;font-size:18px;font-weight:600;justify-content:center;margin:4px 0 0;padding:8px;position:relative;text-transform:uppercase;width:100%"><span style="z-index:1;color:#eee;">'+total+'</span></h4></div></div>'
   });
 }
 
