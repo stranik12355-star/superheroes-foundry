@@ -196,7 +196,7 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== ИЗМЕНЕНО: бонус НЕ умножается на множитель — считается вручную ===== */
+/* ===== ИСПРАВЛЕНО: показывает куб 1d6, бонус не умножается ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
@@ -205,19 +205,17 @@ async function rollDamageFromMessage(messageId){
   const strengthMod=Number(flags.ability)||0;
   const bonus=strengthMod+stable;
 
-  // Кидаем чистый кубик 1d6 — он виден в карточке
-  const damageRoll=new SuperheroesRoll(`1d6`);
+  // Обычный Roll (не SuperheroesRoll), куб 1d6 — будет виден
+  const damageRoll=new Roll("1d6");
   await damageRoll.evaluate({async:true});
-  const dieVal=damageRoll.dice?.[0]?.total ?? 1;
-  const total=dieVal*multiplier+bonus;
+  const die=damageRoll.dice[0];
+  const dieResult=die.results[0]?.result ?? 1;
+  const total=dieResult*multiplier+bonus;
 
-  // Подставляем читаемую формулу и правильный итог
-  damageRoll._formula=`(1d6 \\* ${multiplier}) + (${bonus})`;
-  damageRoll._total=total;
-
-  return damageRoll.toMessage({
+  await damageRoll.toMessage({
     speaker:message.speaker,
-    flavor:"УРОН — ×"+multiplier+" + "+bonus
+    flavor:"УРОН — ×"+multiplier+" + "+bonus,
+    content:'<div class="dice-result"><div class="dice-formula"><span>(1d6 × '+multiplier+') + ('+bonus+')</span></div><div class="tooltip-listener" style="display:flex;gap:6px;justify-content:center;padding:6px 0"><div class="roll-die" style="width:48px;height:48px;display:grid;place-items:center;border:2px solid #c0c4cc;border-radius:8px;background:linear-gradient(145deg,#f2f2f5,#dbdde3);color:#1c1c22;font-weight:700;font-size:22px">'+dieResult+'</div></div><h4 class="dice-total"><span>'+total+'</span></h4></div>'
   });
 }
 
