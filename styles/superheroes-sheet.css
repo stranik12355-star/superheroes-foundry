@@ -332,3 +332,56 @@
   align-items:center !important;
   justify-content:center !important;
 }
+/* ===== ФИНАЛЬНЫЕ ПРАВКИ ===== */
+
+/* 1) ЧИСТАЯ ГАЙКА — без +, ровно по центру (все панели) */
+.superheroes.sheet .list-edit-toggle{
+  font-size:0 !important;              /* прячем возможный текст */
+  width:30px !important;
+  height:28px !important;
+  display:grid !important;
+  place-items:center !important;
+  border:1px solid #44454c !important;
+  border-radius:5px !important;
+  background:transparent !important;
+  cursor:pointer !important;
+  padding:0 !important;
+  margin:0 !important;
+  line-height:1 !important;
+  color:transparent !important;
+  text-shadow:none !important;
+  overflow:hidden !important;
+}
+.superheroes.sheet .list-edit-toggle::before{
+  content:"\2699";
+  font-size:18px;
+  line-height:1;
+  color:#aaa;
+  display:block;
+  text-align:center;
+}
+.superheroes.sheet .list-edit-toggle:hover::before,
+.superheroes.sheet .list-edit-toggle.active::before{color:#e7b13a;}
+.superheroes.sheet .list-edit-toggle:hover,
+.superheroes.sheet .list-edit-toggle.active{border-color:#b7323c !important;background:#211416 !important;}
+
+/* 2) ХАРАКТЕРИСТИКИ — без колонки "Попадание" (6 колонок) */
+.superheroes.sheet .stat-columns,
+.superheroes.sheet .stat-row{
+  grid-template-columns:minmax(135px,1fr) 52px 52px 54px 54px 26px !important;
+}
+/* всё по центру, кроме названия */
+.superheroes.sheet .stat-columns span:not(:first-child),
+.superheroes.sheet .stat-row > .stat-value,
+.superheroes.sheet .stat-row > .stat-derived,
+.superheroes.sheet .stat-row > .attack-button,
+.superheroes.sheet .stat-row > .stat-settings{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+}
+.superheroes.sheet .stat-row > .stat-name{
+  justify-content:flex-start !important;
+  text-align:left !important;
+}
