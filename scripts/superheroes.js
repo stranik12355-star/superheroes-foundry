@@ -196,7 +196,7 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== ИСПРАВЛЕНО: показывает куб 1d6, бонус не умножается ===== */
+/* ===== ИСПРАВЛЕНО: урон в едином стиле чата ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
@@ -205,17 +205,15 @@ async function rollDamageFromMessage(messageId){
   const strengthMod=Number(flags.ability)||0;
   const bonus=strengthMod+stable;
 
-  // Обычный Roll (не SuperheroesRoll), куб 1d6 — будет виден
   const damageRoll=new Roll("1d6");
   await damageRoll.evaluate({async:true});
-  const die=damageRoll.dice[0];
-  const dieResult=die.results[0]?.result ?? 1;
+  const dieResult=damageRoll.dice[0]?.results?.[0]?.result ?? 1;
   const total=dieResult*multiplier+bonus;
 
   await damageRoll.toMessage({
     speaker:message.speaker,
     flavor:"УРОН — ×"+multiplier+" + "+bonus,
-    content:'<div class="dice-result"><div class="dice-formula"><span>(1d6 × '+multiplier+') + ('+bonus+')</span></div><div class="tooltip-listener" style="display:flex;gap:6px;justify-content:center;padding:6px 0"><div class="roll-die" style="width:48px;height:48px;display:grid;place-items:center;border:2px solid #c0c4cc;border-radius:8px;background:linear-gradient(145deg,#f2f2f5,#dbdde3);color:#1c1c22;font-weight:700;font-size:22px">'+dieResult+'</div></div><h4 class="dice-total"><span>'+total+'</span></h4></div>'
+    content:'<div class="superheroes dice-roll"><div class="dice-result"><div class="dice-formula"><span>(1d6 × '+multiplier+') + ('+bonus+')</span></div><div class="dice-tooltip" style="display:flex!important;justify-content:center;gap:8px;padding:8px!important;margin:0!important"><ol class="dice-rolls" style="display:flex!important;justify-content:center;gap:8px;list-style:none;margin:0;padding:0"><li class="roll die d6" style="width:48px!important;height:48px!important;display:grid!important;place-items:center!important;border:2px solid #c0c4cc!important;border-radius:8px!important;background:linear-gradient(145deg,#f2f2f5,#dbdde3)!important;color:#1c1c22!important;font-weight:700!important;font-size:22px!important;line-height:1!important">'+dieResult+'</li></ol></div><h4 class="dice-total" style="align-items:center;background:#b52f39;clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%);color:#fff;display:flex;font-size:18px;font-weight:600;justify-content:center;margin:4px 0 0;padding:8px;position:relative;text-transform:uppercase;width:100%"><span style="z-index:1;color:#eee;">'+total+'</span></h4></div></div>'
   });
 }
 
