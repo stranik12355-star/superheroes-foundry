@@ -101,8 +101,8 @@ class SuperheroesRoll extends Roll {
   }
   async toMessage(messageData={},options={}){
     if(!this._evaluated) await this.evaluate({async:true});
-    messageData.flavor=messageData.flavor||this.options.flavor||"Бросок";
-    options.rollMode=options.rollMode??this.options.rollMode;
+    messageData.flavor = messageData.flavor || "";   // убрали заголовок сверху
+    options.rollMode = options.rollMode ?? this.options.rollMode;
     return super.toMessage(messageData,options);
   }
   static CHAT_TEMPLATE="systems/superheroes/templates/dice/roll.hbs";
@@ -119,14 +119,14 @@ function isSuperheroesRoll(roll){
   return !!(pool?.rolls?.length===3 && pool.rolls[1]?.terms?.[0] instanceof SuperheroesDie);
 }
 
-/* ===== ИЗМЕНЕНО: название броска кладётся в options.flavor (белая линия) ===== */
+/* ===== Название броска кладётся в options.flavor (белая линия) ===== */
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
   roll.options.flavor = flavor;                        // попадёт в {{flavor}} в roll.hbs
   await roll.evaluate({async:true});
   return roll.toMessage({
     speaker:ChatMessage.getSpeaker({actor}),
-    flags:{superheroes:{...flags,threeD6:true}}        // без flavor сверху -> нет дубля
+    flags:{superheroes:{...flags,threeD6:true}}
   });
 }
 async function createCheckRoll(actor,key,label){
