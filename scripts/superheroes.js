@@ -196,19 +196,18 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== ИСПРАВЛЕНО: урон — слово "УРОН", стабильный НЕ умножается ===== */
+/* ===== ИСПРАВЛЕНО: стабильный урон больше НЕ удваивается ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
   const flags=message.flags?.superheroes||{};
-  const multiplier=Math.max(1,Number(flags.damageMultiplier)||1), stable=Number(flags.stable)||0;
-  const strengthMod=Number(flags.ability)||0;
+  const multiplier=Math.max(1,Number(flags.damageMultiplier)||1);
+  const bonus=Number(flags.stable)||0;   // уже = мод статуса + стабильный урон
 
   const damageRoll=new Roll("1d6");
   await damageRoll.evaluate({async:true});
   const dieResult=damageRoll.dice[0]?.results?.[0]?.result ?? 1;
-
-  const total=dieResult*multiplier+strengthMod+stable;
+  const total=dieResult*multiplier+bonus;
 
   await damageRoll.toMessage({
     speaker:message.speaker,
