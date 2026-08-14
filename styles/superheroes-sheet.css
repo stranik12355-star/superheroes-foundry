@@ -389,3 +389,14 @@
 .sh-list-editor-row.locked .sh-list-editor-description{
   display:none !important;
 }
+/* ===== При блокировке название тоже не редактируется ===== */
+.sh-list-editor-row.locked .sh-list-editor-name{
+  pointer-events:none !important;       /* нельзя кликнуть и выбрать */
+  user-select:none !important;
+  cursor:default !important;
+  background:#26262b !important;        /* серо-блокированный вид */
+  color:#aaa !important;
+  border-color:#3a3a41 !important;
+  box-shadow:none !important;
+  opacity:.85 !important;
+}
