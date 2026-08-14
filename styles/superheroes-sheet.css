@@ -312,3 +312,23 @@
 .superheroes.sheet .main-column-left .gear-panel .list-items{min-height:75px!important}
 .superheroes.sheet .stat-name span{text-transform:uppercase!important}
 @media(max-width:720px){.superheroes.sheet .main-layout{display:flex!important;flex-direction:column!important}.superheroes.sheet .main-column,.superheroes.sheet .main-column-left,.superheroes.sheet .main-column-right{width:100%!important;flex:0 0 100%!important}}
+/* ===== Значение основной характеристики — по центру ===== */
+.superheroes.sheet .stat-value{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  text-align:center !important;
+  padding:0 !important;
+}
+/* Страховка: все колонки значений по центру */
+.superheroes.sheet .stat-value,
+.superheroes.sheet .stat-derived{
+  text-align:center !important;
+}
+/* Заголовки колонок тоже центрируем (кроме названия) */
+.superheroes.sheet .stat-columns span:not(:first-child){
+  text-align:center !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+}
