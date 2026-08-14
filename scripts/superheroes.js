@@ -291,7 +291,7 @@ class SuperheroesActorSheet extends ActorSheet {
     await this.actor.update({["system."+type]:arr},{render:false});
     this.render(false);
   }
-    async _toggleRowLock(row){
+  async _toggleRowLock(row){
     if(!row) return;
     const editor=row.closest("[data-editor-type]");
     const type=editor?.dataset.editorType;
@@ -303,6 +303,9 @@ class SuperheroesActorSheet extends ActorSheet {
     await this.actor.update({["system."+type]:arr},{render:false});
     this.render(false);
   }
+  async _deleteListItem(type,index){const s=mergeDefaults(this.actor.system),arr=clone(s[type]);arr.splice(index,1);await this.actor.update({["system."+type]:arr},{render:false});this.render(false);}
+  async _sendItem(type,index){const item=mergeDefaults(this.actor.system)[type][index];if(!item)return;const esc=foundry.utils.escapeHTML,title=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";let meta="";if(type==="powers"){meta=[item.movement&&'<span>Перемещение: '+esc(item.movement)+'</span>',item.cost&&'<span>Стоимость: '+esc(item.cost)+'</span>',item.range&&'<span>Дальность: '+esc(item.range)+'</span>',item.damageType&&'<span>Тип урона: '+esc(item.damageType)+'</span>'].filter(Boolean).join("");}await ChatMessage.create({speaker:ChatMessage.getSpeaker({actor:this.actor}),content:'<div class="sh-chat-card"><div class="chat-title">'+title+'</div><h3>'+esc(item.name||"Без названия")+'</h3>'+(meta?'<div class="power-meta">'+meta+'</div>':'')+'<p>'+esc(item.description||"")+'</p></div>'});}
+}
 
 Hooks.once("init",()=>{
   Handlebars.registerHelper("concat",function(a,b){return (a??"")+(b??"");}); Handlebars.registerHelper("eq",function(a,b){return a===b;});
