@@ -118,13 +118,15 @@ function isSuperheroesRoll(roll){
   const pool=getPool(roll);
   return !!(pool?.rolls?.length===3 && pool.rolls[1]?.terms?.[0] instanceof SuperheroesDie);
 }
+
+/* ===== ИЗМЕНЕНО: название броска кладётся в options.flavor (белая линия) ===== */
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
+  roll.options.flavor = flavor;                        // попадёт в {{flavor}} в roll.hbs
   await roll.evaluate({async:true});
   return roll.toMessage({
     speaker:ChatMessage.getSpeaker({actor}),
-    flavor,
-    flags:{superheroes:{...flags,threeD6:true}}
+    flags:{superheroes:{...flags,threeD6:true}}        // без flavor сверху -> нет дубля
   });
 }
 async function createCheckRoll(actor,key,label){
@@ -196,7 +198,7 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== ИСПРАВЛЕНО: стабильный урон больше НЕ удваивается ===== */
+/* ===== УРОН: слово "УРОН", стабильный НЕ удваивается ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
