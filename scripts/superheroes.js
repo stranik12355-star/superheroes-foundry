@@ -291,6 +291,72 @@ class SuperheroesActorSheet extends ActorSheet {
   activateListeners(html){
     super.activateListeners(html); html.off(".superheroes");
     
+    // === ЧУВСТВИТЕЛЬНАЯ СОРТИРОВКА DRAG & DROP ===
+    const listItems = html.find('.list-view-item');
+    listItems.on('dragstart', (e) => {
+      const el = e.currentTarget;
+      const dragData = {
+        type: "SortItem",
+        listType: el.dataset.listType,
+        index: Number(el.dataset.index)
+      };
+      e.originalEvent.dataTransfer.setData("text/plain", JSON.stringify(dragData));
+      e.originalEvent.dataTransfer.effectAllowed = "move";
+      e.originalEvent.dataTransfer.setDragImage(el, 0, 0);
+    });
+
+    listItems.on('dragover', (e) => {
+      e.preventDefault();
+      e.originalEvent.dataTransfer.dropEffect = "move";
+      const target = e.currentTarget;
+      const rect = target.getBoundingClientRect();
+      const isBottomHalf = (e.originalEvent.clientY - rect.top) > (rect.height / 2);
+      
+      html.find('.list-view-item').removeClass('drag-over-top drag-over-bottom');
+      if (isBottomHalf) target.classList.add('drag-over-bottom');
+      else target.classList.add('drag-over-top');
+    });
+
+    listItems.on('dragleave', (e) => {
+      e.currentTarget.classList.remove('drag-over-top', 'drag-over-bottom');
+    });
+
+    listItems.on('drop', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      html.find('.list-view-item').removeClass('drag-over-top drag-over-bottom');
+      
+      const dataString = e.originalEvent.dataTransfer.getData("text/plain");
+      if (!dataString) return;
+      
+      let data;
+      try { data = JSON.parse(dataString); } catch(err) { return; }
+      
+      if (data.type === "SortItem") {
+        const dropTarget = e.currentTarget;
+        const listType = data.listType;
+        if (dropTarget.dataset.listType !== listType) return;
+        
+        const fromIndex = data.index;
+        let toIndex = Number(dropTarget.dataset.index);
+        
+        const rect = dropTarget.getBoundingClientRect();
+        const isBottomHalf = (e.originalEvent.clientY - rect.top) > (rect.height / 2);
+        
+        if (isBottomHalf && toIndex < fromIndex) toIndex++;
+        if (!isBottomHalf && toIndex > fromIndex) toIndex--;
+        
+        if (fromIndex === toIndex) return;
+        
+        const arr = clone(this.actor.system[listType] || []);
+        const item = arr.splice(fromIndex, 1)[0];
+        arr.splice(toIndex, 0, item);
+        
+        await this.actor.update({[`system.${listType}`]: arr});
+      }
+    });
+    // =============================================
+
     if (this._activeTab) {
       html.find(".tab-button").removeClass("active");
       html.find(".tab-panel").removeClass("active");
@@ -449,43 +515,15 @@ class SuperheroesActorSheet extends ActorSheet {
     });
   }
 
-  /* === ПРАВИЛЬНЫЙ ПЕРЕХВАТ ДРОПА (СОРТИРОВКА + БИБЛИОТЕКА) === */
+  // --- Перехват перетаскивания из БИБЛИОТЕКИ ---
   async _onDrop(event) {
-    // Пытаемся прочитать данные
     const dataString = event.dataTransfer?.getData("text/plain");
     if (dataString) {
       try {
         const data = JSON.parse(dataString);
-        
-        // Если это наша внутренняя сортировка
-        if (data.type === "SortItem") {
-          event.preventDefault(); // Останавливаем стандартное поведение
-
-          const dropTarget = event.target.closest(".list-item");
-          if (!dropTarget) return false;
-
-          const listType = data.listType;
-          if (dropTarget.dataset.listType !== listType) return false;
-
-          const fromIndex = data.index;
-          const toIndex = Number(dropTarget.dataset.index);
-
-          if (fromIndex === toIndex) return false;
-
-          const arr = clone(this.actor.system[listType] || []);
-          const item = arr.splice(fromIndex, 1)[0];
-          arr.splice(toIndex, 0, item);
-
-          await this.actor.update({[`system.${listType}`]: arr});
-          return false; // Сортировка завершена, дальше ничего делать не надо
-        }
-      } catch (e) {
-        // Если JSON не распарсился или это не сортировка — идем дальше
-      }
+        if (data.type === "SortItem") return false; // Мы это уже обработали выше
+      } catch (e) {}
     }
-    
-    // Если это не наша сортировка — отдаем стандартному механизму Foundry
-    // Он сам по цепочке вызовет наш _onDropItem()
     return super._onDrop(event);
   }
 
@@ -619,7 +657,7 @@ class SuperheroesActorSheet extends ActorSheet {
         metaItems.push(`<span style="padding: 2px 5px; background: #2a004a; border: 1px solid #6600cc; color: #d899ff; border-radius: 4px; font-weight: bold; font-size: 8px;">👁 КОНЦЕНТРАЦИЯ</span>`);
       }
       if (item.name === "Поглощение Энергии" && item.tempFocus > 0) {
-        metaItems.push(`<span style="padding: 2px 5px; background: #3d004d; border: 1px solid #cc00ff; color: #f2ccff; border-radius: 4px; font-weight: bold; font-size: 8px;">НАКОПЛЕНО: ${item.tempFocus}</span>`);
+        metaItems.push(`<span style="padding: 2px 5px; background: #2b003b; border: 1px solid #cc00ff; color: #f2ccff; border-radius: 4px; font-weight: bold; font-size: 8px;">НАКОПЛ.: ${item.tempFocus}</span>`);
       }
 
       if (metaItems.length > 0) {
