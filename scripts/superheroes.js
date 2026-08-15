@@ -424,8 +424,17 @@ class SuperheroesActorSheet extends ActorSheet {
       if(!["powers","traits","gear"].includes(type)) return;
       const arr=clone(this.actor.system[type]||[]);
       if(!arr[index]) return;
-      let value = el.value;
-      if (field === "cost") value = Number(value) || 0;
+      
+      let value;
+      // === ПРАВИЛЬНАЯ ОБРАБОТКА ГАЛОЧЕК ===
+      if (el.type === "checkbox") {
+        value = el.checked;
+      } else {
+        value = el.value;
+        if (field === "cost") value = Number(value) || 0;
+      }
+      // =====================================
+
       arr[index]={...arr[index],[field]:value};
       await this.actor.update({["system."+type]:arr},{render:false});
     });
