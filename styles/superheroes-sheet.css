@@ -452,4 +452,10 @@
     letter-spacing: 0.5px;
     margin-right: 10px;
     white-space: nowrap;
+   /* ===== Скрываем иконку "мешка" в библиотеке особенностей ===== */
+[data-pack="superheroes.traits"] .directory-item img,
+[data-pack="superheroes.traits"] .directory-item .thumbnail,
+[data-pack="superheroes.traits"] .directory-item .document-art {
+    display: none !important;
+}
 }
