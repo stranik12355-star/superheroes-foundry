@@ -247,17 +247,17 @@ class SuperheroesActorSheet extends ActorSheet {
   activateListeners(html){
     super.activateListeners(html); html.off(".superheroes");
     
-    // ЖИВАЯ СИНХРОНИЗАЦИЯ ИМЕНИ: Меняет текст везде во время набора
+    // ЖИВАЯ СИНХРОНИЗАЦИЯ ИМЕНИ (Визуал во время печати)
     html.on("input", ".actor-name, input[data-bio-field='name']", e => {
       const val = e.currentTarget.value;
       html.find(".actor-name").val(val);
       html.find("input[data-bio-field='name']").val(val);
     });
 
-    // СОХРАНЕНИЕ ГЛАВНОГО ИМЕНИ (Шапка) ПРИ ПОТЕРЕ ФОКУСА
+    // СОХРАНЕНИЕ ГЛАВНОГО ИМЕНИ: Убрал render: false, чтобы обновилось боковое меню!
     html.on("change.superheroes", ".actor-name", async e => {
       const val = e.currentTarget.value;
-      await this.actor.update({ name: val, "system.biography.name": val }, {render: false});
+      await this.actor.update({ name: val, "system.biography.name": val });
     });
     
     html.on("click.superheroes","[data-action]",async e=>{
@@ -290,7 +290,8 @@ class SuperheroesActorSheet extends ActorSheet {
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
       if(field==="name") {
-         await this.actor.update({name:value,"system.biography.name":value},{render:false});
+         // Тоже убрал render: false для имени, чтобы боковое меню обновлялось!
+         await this.actor.update({name:value,"system.biography.name":value});
       } else {
          await this.actor.update({["system.biography."+field]:value},{render:false});
       }
