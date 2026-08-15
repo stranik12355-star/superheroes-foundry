@@ -1,0 +1,30 @@
+<div class="sh-chat-card {{#if critical}}critical{{/if}}">
+ <div class="chat-title">{{label}}</div>
+ {{#if (eq kind "check")}}
+ 
+ <!-- КОНТЕЙНЕР КУБИКОВ -->
+ <div class="dice-line" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; margin-bottom: 6px !important;">
+  {{#each dice as |die i|}}
+    <div class="roll-die {{#if (eq i 1)}}middle{{/if}} {{#if (and (eq i 1) ../critical)}}critical-die{{/if}}" style="flex: 0 0 40px !important; width: 40px !important; height: 40px !important; display: grid !important; place-items: center !important;">
+      {{#if (and (eq i 1) ../critical)}}★{{else}}{{die}}{{/if}}
+    </div>
+  {{/each}}
+ </div>
+ 
+ <!-- ТЕКСТОВЫЕ КНОПКИ ПЕРЕБРОСА -->
+ <div class="reroll-row" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important;">
+  {{#each dice as |die i|}}
+    <div class="reroll-cell" style="flex: 0 0 40px !important; display: flex !important; flex-direction: column !important; gap: 5px !important; align-items: center !important;">
+      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="advantage" title="С преимуществом" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">Преим.</button>
+      
+      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="disadvantage" title="С помехой" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#d34a53'" onmouseout="this.style.color='#888'">Помеха</button>
+    </div>
+  {{/each}}
+ </div>
+ 
+ {{else}}
+ <div class="attack-roll"><span>(1d6 × {{multiplier}}) + {{modifier}}</span><strong>{{total}}</strong></div>
+ {{/if}}
+ <div class="chat-total" style="margin-top: 10px !important;"><span>Результат</span><strong>{{total}}</strong></div>
+ {{#if critical}}<div class="critical-note">★ КРИТИЧЕСКИЙ РЕЗУЛЬТАТ — ЦЕНТРАЛЬНАЯ КОСТЬ СЧИТАЕТСЯ КАК 6</div>{{/if}}
+</div>

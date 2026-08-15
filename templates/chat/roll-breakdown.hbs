@@ -1,0 +1,30 @@
+{{#if parts.length}}
+<div class="superheroes-tooltip" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 10px !important;">
+  {{#each parts}}
+    <section class="tooltip-part" style="margin: 0 !important; padding: 0 !important; border: none !important;">
+      <div class="dice">
+        <ol class="dice-rolls superheroes-dice-tooltip-row" style="margin: 0 !important; padding: 0 !important; list-style: none !important;">
+          {{#each rolls}}
+            <li class="roll {{ classes }}" style="width: 40px !important; height: 40px !important; display: grid !important; place-items: center !important; flex: 0 0 auto !important; margin-bottom: 6px !important;">
+              {{#if @root.isPrivate}}?{{ else }}{{ result }}{{/if}}
+            </li>
+          {{/each}}
+        </ol>
+        
+        {{#if (eq rolls.length 3)}}
+        <!-- ТЕКСТОВЫЕ КНОПКИ В ТУЛТИПЕ -->
+        <div class="superheroes-reroll-grid">
+          {{#each rolls}}
+            <div class="superheroes-reroll-cell" style="display: flex !important; flex-direction: column !important; gap: 5px !important; align-items: center !important;">
+              <button type="button" class="retroEdgeMode" data-retro-action="edge" data-index="{{@index}}" title="С преимуществом" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">Преим.</button>
+              
+              <button type="button" class="retroEdgeMode" data-retro-action="trouble" data-index="{{@index}}" title="С помехой" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#d34a53'" onmouseout="this.style.color='#888'">Помеха</button>
+            </div>
+          {{/each}}
+        </div>
+        {{/if}}
+      </div>
+    </section>
+  {{/each}}
+</div>
+{{/if}}
