@@ -495,15 +495,39 @@ window.SuperheroesSystem={SuperheroesDie,SuperheroesRoll,createCheckRoll,createN
 
 /* --- АВТОЗАПОЛНЕНИЕ БИБЛИОТЕКИ ОСОБЕННОСТЕЙ --- */
 Hooks.once("ready", async function() {
+  // 1. Проверяем, что зашел Мастер игры (игрокам запрещено редактировать компендиумы)
+  if (!game.user.isGM) return;
+
   const pack = game.packs.get("superheroes.traits");
+  
+  // 2. Если папка пустая и есть наш список
   if (pack && pack.index.size === 0 && window.SuperheroesTraitsLibrary) {
     console.log("Супергерои | Заполняю библиотеку особенностей...");
+
+    // 3. Запоминаем текущее состояние и СНИМАЕМ ЗАМОК
+    const wasLocked = pack.locked;
+    if (wasLocked) {
+      await pack.configure({ locked: false });
+    }
+
+    // 4. Формируем предметы для добавления
     const itemsToCreate = window.SuperheroesTraitsLibrary.map(t => ({
       name: t.name,
       type: "trait",
       system: { description: t.description }
     }));
-    await Item.createDocuments(itemsToCreate, { pack: pack.collection });
-    ui.notifications.info("Библиотека особенностей успешно создана!");
+
+    // 5. Записываем в компендиум
+    try {
+      await Item.createDocuments(itemsToCreate, { pack: pack.collection });
+      ui.notifications.info("Библиотека особенностей успешно создана!");
+    } catch (err) {
+      console.error("Супергерои | Ошибка записи в библиотеку:", err);
+    }
+
+    // 6. ВЕШАЕМ ЗАМОК ОБРАТНО (для безопасности)
+    if (wasLocked) {
+      await pack.configure({ locked: true });
+    }
   }
 });
