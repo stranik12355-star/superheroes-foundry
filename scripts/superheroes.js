@@ -44,8 +44,19 @@ function resourceMax(value,bonus=0){
 }
 function statDerived(actor,key){
   const system=mergeDefaults(actor.system),s=system.stats[key],mod=statMod(s.value);
-  return {value:s.value,mod,defense:s.value+s.defense,nonCombat:s.value+s.nonCombat,hit:mod+s.hit,
-    stable:mod+s.stable,multiplier:Number(system.rank)+s.multiplier};
+  const ncMod = (s.value + s.nonCombat) - 10;
+  const hitMod = mod + s.hit;
+  return {
+    value: s.value,
+    mod: mod,
+    defense: s.value + s.defense,
+    nonCombat: s.value + s.nonCombat,
+    nonCombatLabel: ncMod > 0 ? "+" + ncMod : ncMod,
+    hit: hitMod,
+    hitLabel: hitMod > 0 ? "+" + hitMod : hitMod,
+    stable: mod + s.stable,
+    multiplier: Number(system.rank) + s.multiplier
+  };
 }
 function speedDerived(actor){
   const s=mergeDefaults(actor.system), a=Number(s.stats.agility.value);
