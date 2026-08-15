@@ -137,10 +137,10 @@
         {{#if item.reaction}}<span class="power-badge badge-reaction" title="Активируется как Реакция">⚡ РЕАКЦИЯ</span>{{/if}}
         {{#if item.concentration}}<span class="power-badge badge-concentration" title="Требует Концентрации">👁 КОНЦЕНТРАЦИЯ</span>{{/if}}
 
-        <!-- ПОЛЕ ВРЕМЕННОГО ФОКУСА (ТОЛЬКО ДЛЯ ПОГЛОЩЕНИЯ ЭНЕРГИИ) -->
+        <!-- ПОЛЕ ВРЕМЕННОГО ФОКУСА (МАЛЕНЬКОЕ, ТОЛЬКО ДЛЯ ПОГЛОЩЕНИЯ ЭНЕРГИИ) -->
         {{#if (eq item.name "Поглощение Энергии")}}
           <span class="power-badge temp-focus-badge" title="Накопленный временный фокус">
-            НАКОПЛЕНО: <input type="number" class="temp-focus-input" data-index="{{i}}" value="{{item.tempFocus}}" min="0" max="9999" placeholder="0">
+            НАКОПЛ.: <input type="number" class="temp-focus-input" data-index="{{i}}" value="{{item.tempFocus}}" min="0" max="999" placeholder="0">
           </span>
         {{/if}}
 
