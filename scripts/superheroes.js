@@ -319,7 +319,48 @@ class SuperheroesActorSheet extends ActorSheet {
     this.render(false);
   }
   async _deleteListItem(type,index){const s=mergeDefaults(this.actor.system),arr=clone(s[type]);arr.splice(index,1);await this.actor.update({["system."+type]:arr},{render:false});this.render(false);}
-  async _sendItem(type,index){const item=mergeDefaults(this.actor.system)[type][index];if(!item)return;const esc=foundry.utils.escapeHTML,title=type==="powers"?"СПОСОБНОСТЬ":type==="traits"?"ОСОБЕННОСТЬ":"СНАРЯЖЕНИЕ";let meta="";if(type==="powers"){meta=[item.movement&&'<span>Перемещение: '+esc(item.movement)+'</span>',item.cost&&'<span>Стоимость: '+esc(item.cost)+'</span>',item.range&&'<span>Дальность: '+esc(item.range)+'</span>',item.damageType&&'<span>Тип урона: '+esc(item.damageType)+'</span>'].filter(Boolean).join("");}await ChatMessage.create({speaker:ChatMessage.getSpeaker({actor:this.actor}),content:'<div class="sh-chat-card"><div class="chat-title">'+title+'</div><h3>'+esc(item.name||"Без названия")+'</h3>'+(meta?'<div class="power-meta">'+meta+'</div>':'')+'<p>'+esc(item.description||"")+'</p></div>'});}
+  async _sendItem(type, index) {
+    const item = mergeDefaults(this.actor.system)[type][index];
+    if (!item) return;
+
+    const esc = foundry.utils.escapeHTML;
+    const title = type === "powers" ? "СПОСОБНОСТЬ" : type === "traits" ? "ОСОБЕННОСТЬ" : "СНАРЯЖЕНИЕ";
+
+    let meta = "";
+    if (type === "powers") {
+      const metaItems = [];
+      // Если стоимость больше нуля, создаем плашку
+      if (item.cost && Number(item.cost) > 0) {
+        metaItems.push(`<span>ФОКУС: ${esc(item.cost)}</span>`);
+      }
+      
+      // На будущее: если добавишь в HTML поля дальности или урона, они тут тоже подхватятся
+      if (item.movement) metaItems.push(`<span>Перемещение: ${esc(item.movement)}</span>`);
+      if (item.range) metaItems.push(`<span>Дальность: ${esc(item.range)}</span>`);
+      if (item.damageType) metaItems.push(`<span>Тип урона: ${esc(item.damageType)}</span>`);
+
+      if (metaItems.length > 0) {
+        meta = metaItems.join("");
+      }
+    }
+
+    // Сохраняем абзацы в описании (заменяем переносы строк на <br>)
+    const descriptionFormatted = esc(item.description || "").replace(/\n/g, '<br>');
+
+    await ChatMessage.create({
+      speaker: ChatMessage.getSpeaker({ actor: this.actor }),
+      content: `
+        <div class="sh-chat-card">
+          <div class="chat-title">${title}</div>
+          <h3 style="margin: 5px 0; color: #fff; text-transform: uppercase; font-size: 15px; letter-spacing: 0.5px;">${esc(item.name || "Без названия")}</h3>
+          ${meta ? `<div class="power-meta" style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:8px;">${meta}</div>` : ''}
+          <div style="color: #ccc; font-size: 11px; line-height: 1.45;">
+            ${descriptionFormatted}
+          </div>
+        </div>
+      `
+    });
+  }
 }
 
 Hooks.once("init",()=>{
