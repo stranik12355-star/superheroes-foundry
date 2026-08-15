@@ -1,0 +1,212 @@
+<form class="superheroes-sheet" autocomplete="off">
+<header class="sh-header">
+  <div class="sh-identity">
+    <div class="sh-portrait"><img src="{{actor.img}}" data-edit="img" title="{{actor.name}}" alt="Портрет"></div>
+    <div class="sh-name-block">
+      <input class="actor-name" name="name" type="text" value="{{actor.name}}" placeholder="Имя">
+      <div class="sh-subtitle">СУПЕРГЕРОИ</div>
+    </div>
+  </div>
+  <div class="sh-header-stats">
+    <button type="button" class="rank-box" data-action="edit-rank"><span>РАНГ</span><b>{{system.rank}}</b></button>
+    <div class="karma-box"><span>КАРМА</span><div class="karma-value"><input data-action="resource-current" data-field="karma" type="number" value="{{system.karma}}" min="0"><span>/ {{derived.maxKarma}}</span></div></div>
+    <button type="button" class="sleep-button" data-action="sleep" title="Сон: восстановить ХП и Фокус, вернуть Карму к рангу">☾</button>
+  </div>
+</header>
+<section class="top-info-row">
+ <section class="speed-panel">
+  <div class="speed-title"><span>СКОРОСТЬ</span><button type="button" data-action="edit-speed" title="Настройки скорости">⚙</button></div>
+  <div class="speed-grid">
+   <div><span>БЕГ</span><b>{{derived.speed.running}}</b></div>
+   <div><span>ЛАЗАНИЕ</span><b>{{derived.speed.climbing}}</b></div>
+   <div><span>ПЛАВАНИЕ</span><b>{{derived.speed.swimming}}</b></div>
+   <div><span>ПРЫЖОК</span><b>{{derived.speed.jumping}}</b></div>
+   <div><span>ПОЛЁТ</span><b>{{derived.speed.flying}}</b></div>
+  </div>
+ </section>
+ <div class="resource-card initiative"><div class="resource-head"><span>ИНИЦИАТИВА</span><button type="button" data-action="edit-initiative">⚙</button></div><div class="resource-value"><button type="button" class="initiative-roll" data-action="roll-initiative" title="Бросок инициативы"><b>{{derived.initiative}}</b></button></div></div>
+ <div class="resource-card hp"><div class="resource-head"><span>ЗДОРОВЬЕ</span><button type="button" data-action="edit-health">⚙</button></div><div class="resource-value"><input data-action="resource-current" data-field="health" type="number" value="{{system.health.value}}" min="0" max="{{derived.maxHP}}"><span>/ {{derived.maxHP}}</span></div></div>
+ <div class="resource-card focus"><div class="resource-head"><span>ФОКУС</span><button type="button" data-action="edit-focus">⚙</button></div><div class="resource-value"><input data-action="resource-current" data-field="focus" type="number" value="{{system.focus.value}}" min="0" max="{{derived.maxFocus}}"><span>/ {{derived.maxFocus}}</span></div></div>
+</section>
+<nav class="sh-tabs">
+ <button type="button" class="tab-button active" data-tab="main">Персонаж</button>
+ <button type="button" class="tab-button" data-tab="bio">Биография</button>
+</nav>
+<section class="tab-panel active" data-tab="main">
+ <div class="main-layout">
+  <div class="main-column main-column-left">
+ <div class="stats-panel">
+  <div class="panel-title"><span>ХАРАКТЕРИСТИКИ</span><span class="panel-hint">Нажмите на вне боя или атаку для броска</span></div>
+  <div class="stat-columns"><span></span><span>ОСНОВНАЯ</span><span>ЗАЩИТА</span><span>ВНЕ БОЯ</span><span>АТАКА</span><span></span></div>
+  {{#each derived.stats as |s key|}}
+  <div class="stat-row">
+   <div class="stat-name"><i class="stat-icon stat-icon-{{key}}" aria-hidden="true"></i><span>{{localize (concat "SUPERHEROES.Stat." key)}}</span></div>
+   <div class="stat-value stat-inactive">{{s.value}}</div>
+   <div class="stat-derived stat-inactive"><span>{{s.defense}}</span></div>
+   <button type="button" class="stat-derived clickable" data-action="roll-noncombat" data-stat="{{key}}" title="Бросок вне боя"><span>{{s.nonCombatLabel}}</span></button>
+   <button type="button" class="attack-button" data-action="roll-attack" data-stat="{{key}}" title="Атака"><span>{{s.hitLabel}}</span></button>
+   <button type="button" class="stat-settings" data-action="edit-stat" data-stat="{{key}}" title="Настройки характеристики">⚙</button>
+  </div>
+  {{/each}}
+ </div>
+  {{!-- Снаряжение --}}
+  <section class="list-panel gear-panel" data-list-type="gear">
+   <div class="panel-title">
+    <span>СНАРЯЖЕНИЕ</span>
+    <button type="button" class="list-edit-toggle {{#if derived.editing.gear}}active{{/if}}" data-action="toggle-edit" data-type="gear" title="Редактировать снаряжение"></button>
+   </div>
+   {{#if derived.editing.gear}}
+    <div class="sh-list-editor" data-editor-type="gear">
+     <div class="sh-list-editor-rows">
+      {{#each system.gear as |item i|}}
+       <div class="sh-list-editor-row {{#if item.locked}}locked{{/if}}" data-row="{{i}}">
+        <div class="sh-list-editor-row-head"><span>СНАРЯЖЕНИЕ {{i}}</span><span class="sh-list-editor-row-tools"><button type="button" class="row-lock {{#if item.locked}}active{{/if}}" data-action="toggle-row-lock" title="Заблокировать/разблокировать">⚙</button><button type="button" class="sh-list-editor-remove" data-action="delete-item" data-type="gear" data-index="{{i}}" title="Удалить">×</button></span></div>
+        <label>НАЗВАНИЕ</label>
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="gear" data-index="{{i}}" type="text" value="{{item.name}}" placeholder="Название предмета">
+        <label>ОПИСАНИЕ</label>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="gear" data-index="{{i}}" placeholder="Описание">{{item.description}}</textarea>
+       </div>
+      {{else}}<div class="sh-list-editor-empty empty">Пока нет снаряжения.</div>{{/each}}
+     </div>
+     <button type="button" class="sh-list-editor-add" data-action="add-list-row" data-type="gear" title="Добавить снаряжение">+</button>
+    </div>
+   {{else}}
+    <div class="list-items" data-list-items="gear">
+     {{#each system.gear as |item i|}}
+      <div class="expandable list-item list-view-item" data-list-item>
+       <div class="item-head">
+        <button type="button" class="item-title" data-action="send-item" data-type="gear" data-index="{{i}}">{{item.name}}</button>
+        {{#if item.description}}<span class="item-actions"><button type="button" class="arrow" data-action="toggle-description" title="Открыть/свернуть описание">⌄</button></span>{{/if}}
+       </div>
+       <div class="item-details"><p>{{item.description}}</p></div>
+      </div>
+     {{else}}<div class="empty">Нет снаряжения. Нажмите ⚙, чтобы перейти в режим редактирования.</div>{{/each}}
+    </div>
+   {{/if}}
+  </section>
+  </div>
+  <div class="main-column main-column-right">
+  {{!-- Способности --}}
+  <section class="list-panel" data-list-type="powers">
+   <div class="panel-title">
+    <span>СПОСОБНОСТИ</span>
+    <button type="button" class="list-edit-toggle {{#if derived.editing.powers}}active{{/if}}" data-action="toggle-edit" data-type="powers" title="Редактировать способности"></button>
+   </div>
+   {{#if derived.editing.powers}}
+    <div class="sh-list-editor" data-editor-type="powers">
+     <div class="sh-list-editor-rows">
+      {{#each system.powers as |item i|}}
+       <div class="sh-list-editor-row {{#if item.locked}}locked{{/if}}" data-row="{{i}}">
+        <div class="sh-list-editor-row-head"><span>СПОСОБНОСТЬ {{i}}</span><span class="sh-list-editor-row-tools"><button type="button" class="row-lock {{#if item.locked}}active{{/if}}" data-action="toggle-row-lock" title="Заблокировать/разблокировать">⚙</button><button type="button" class="sh-list-editor-remove" data-action="delete-item" data-type="powers" data-index="{{i}}" title="Удалить">×</button></span></div>
+        
+        <label>НАЗВАНИЕ</label>
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="powers" data-index="{{i}}" type="text" value="{{item.name}}" placeholder="Название">
+        
+        <!-- УМНАЯ СТОИМОСТЬ ФОКУСА -->
+        <div class="sh-power-cost-row">
+          <label>СТОИМОСТЬ ФОКУСА</label>
+          <input class="sh-list-editor-cost" data-edit-field="cost" data-type="powers" data-index="{{i}}" type="number" value="{{item.cost}}" placeholder="0" min="0" max="9999" {{#if item.locked}}disabled{{/if}}>
+        </div>
+
+        <label>ОПИСАНИЕ</label>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="powers" data-index="{{i}}" placeholder="Описание">{{item.description}}</textarea>
+       </div>
+      {{else}}<div class="sh-list-editor-empty empty">Пока нет способностей.</div>{{/each}}
+     </div>
+     <button type="button" class="sh-list-editor-add" data-action="add-list-row" data-type="powers" title="Добавить способность">+</button>
+    </div>
+   {{else}}
+    <div class="list-items" data-list-items="powers">
+     {{#each system.powers as |item i|}}
+      <div class="expandable list-item list-view-item" data-list-item>
+       <div class="item-head">
+        <button type="button" class="item-title" data-action="send-item" data-type="powers" data-index="{{i}}">{{item.name}}</button>
+        
+        <!-- ПЛАШКА СТОИМОСТИ (Отображается только если > 0) -->
+        {{#if item.cost}}
+          <span class="power-cost-badge">ФОКУС: {{item.cost}}</span>
+        {{/if}}
+
+        {{#if item.description}}<span class="item-actions"><button type="button" class="arrow" data-action="toggle-description" title="Открыть/свернуть описание">⌄</button></span>{{/if}}
+       </div>
+       <div class="item-details"><p>{{item.description}}</p></div>
+      </div>
+     {{else}}<div class="empty">Нет способностей. Нажмите ⚙, чтобы перейти в режим редактирования.</div>{{/each}}
+    </div>
+   {{/if}}
+  </section>
+
+  {{!-- Особенности --}}
+  <section class="list-panel" data-list-type="traits">
+   <div class="panel-title">
+    <span>ОСОБЕННОСТИ</span>
+    <div style="display: flex; gap: 5px;">
+      <button type="button" data-action="open-compendium" title="Открыть библиотеку особенностей" style="width:30px; height:28px; border:1px solid #44454c; border-radius:5px; background:transparent; cursor:pointer; display:grid; place-items:center; font-size:14px; padding:0; margin:0;" onmouseover="this.style.borderColor='#b7323c'; this.style.backgroundColor='#211416';" onmouseout="this.style.borderColor='#44454c'; this.style.backgroundColor='transparent';">📖</button>
+      <button type="button" class="list-edit-toggle {{#if derived.editing.traits}}active{{/if}}" data-action="toggle-edit" data-type="traits" title="Редактировать особенности"></button>
+    </div>
+   </div>
+   {{#if derived.editing.traits}}
+    <div class="sh-list-editor" data-editor-type="traits">
+     <div class="sh-list-editor-rows">
+      {{#each system.traits as |item i|}}
+       <div class="sh-list-editor-row {{#if item.locked}}locked{{/if}}" data-row="{{i}}">
+        <div class="sh-list-editor-row-head"><span>ОСОБЕННОСТЬ {{i}}</span><span class="sh-list-editor-row-tools"><button type="button" class="row-lock {{#if item.locked}}active{{/if}}" data-action="toggle-row-lock" title="Заблокировать/разблокировать">⚙</button><button type="button" class="sh-list-editor-remove" data-action="delete-item" data-type="traits" data-index="{{i}}" title="Удалить">×</button></span></div>
+        <label>НАЗВАНИЕ</label>
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="traits" data-index="{{i}}" type="text" value="{{item.name}}" placeholder="Название">
+        <label>ОПИСАНИЕ</label>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="traits" data-index="{{i}}" placeholder="Описание">{{item.description}}</textarea>
+       </div>
+      {{else}}<div class="sh-list-editor-empty empty">Пока нет особенностей.</div>{{/each}}
+     </div>
+     <button type="button" class="sh-list-editor-add" data-action="add-list-row" data-type="traits" title="Добавить особенность">+</button>
+    </div>
+   {{else}}
+    <div class="list-items" data-list-items="traits">
+     {{#each system.traits as |item i|}}
+      <div class="expandable list-item list-view-item" data-list-item>
+       <div class="item-head">
+        <button type="button" class="item-title" data-action="send-item" data-type="traits" data-index="{{i}}">{{item.name}}</button>
+        
+        <!-- ИЗМЕНЕННЫЙ БЛОК ДЛЯ ИКОНКИ БЕРСЕРКА И СТРЕЛОЧКИ -->
+        <span class="item-actions">
+          {{#if (eq item.name "Берсерк")}}
+            <button type="button" class="trait-toggle {{#if item.active}}active{{/if}}" data-action="toggle-trait-active" data-type="traits" data-index="{{i}}" title="Активировать Ярость!">💢</button>
+          {{/if}}
+          {{#if item.description}}<button type="button" class="arrow" data-action="toggle-description" title="Открыть/свернуть описание">⌄</button>{{/if}}
+        </span>
+
+       </div>
+       <div class="item-details"><p>{{item.description}}</p></div>
+      </div>
+     {{else}}<div class="empty">Нет особенностей. Нажмите ⚙, чтобы перейти в режим редактирования.</div>{{/each}}
+    </div>
+   {{/if}}
+  </section>
+  </div>
+ </div>
+</section>
+<section class="tab-panel" data-tab="bio">
+ <div class="bio-card">
+  <div class="bio-top">
+   <div class="bio-portrait"><img src="{{actor.img}}" data-edit="img" title="{{actor.name}}" alt="Портрет"></div>
+   <div class="bio-fields">
+    <div class="bio-name"><span>ИМЯ</span><input data-bio-field="name" value="{{actor.name}}" readonly></div>
+    <div class="bio-grid">
+      <div><span>ПРОЗВИЩЕ</span><input data-bio-field="nickname" value="{{system.biography.nickname}}" readonly placeholder="Введите прозвище"></div>
+      <div><span>ВОЗРАСТ</span><input data-bio-field="age" value="{{system.biography.age}}" readonly placeholder="Введите возраст"></div>
+      <div><span>ПОЛ</span><input data-bio-field="gender" value="{{system.biography.gender}}" readonly placeholder="Введите пол"></div>
+      <div><span>РОСТ</span><input data-bio-field="height" value="{{system.biography.height}}" readonly placeholder="Введите рост"></div>
+      <div><span>ВЕС</span><input data-bio-field="weight" value="{{system.biography.weight}}" readonly placeholder="Введите вес"></div>
+      <div><span>ГЛАЗА</span><input data-bio-field="eyes" value="{{system.biography.eyes}}" readonly placeholder="Введите цвет глаз"></div>
+      <div><span>ВОЛОСЫ</span><input data-bio-field="hair" value="{{system.biography.hair}}" readonly placeholder="Введите цвет волос"></div>
+    </div>
+   </div>
+   <div class="bio-tools"><button type="button" class="bio-edit" data-action="edit-bio" title="Редактировать биографию">⚙</button><button type="button" class="token-edit" data-action="edit-token" title="Настройки токена">◈</button></div>
+  </div>
+  <div class="bio-text-grid">
+  <div class="text-box"><h3>ИСТОРИЯ</h3><textarea data-bio-field="history" readonly placeholder="Введите историю персонажа">{{system.biography.history}}</textarea></div>
+  <div class="text-box"><h3>ЗАМЕТКИ</h3><textarea data-bio-field="notes" readonly placeholder="Введите заметки">{{system.biography.notes}}</textarea></div>
+</div>
+ </div>
+</section>
+</form>
