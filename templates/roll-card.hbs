@@ -2,24 +2,27 @@
  <div class="chat-title">{{label}}</div>
  {{#if (eq kind "check")}}
  
- <!-- КОНТЕЙНЕР КУБИКОВ -->
- <div class="dice-line" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; margin-bottom: 6px !important;">
+ <!-- КОНТЕЙНЕР БРОСКА -->
+ <div class="dice-line" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 12px !important; margin-bottom: 5px !important;">
+  
   {{#each dice as |die i|}}
-    <div class="roll-die {{#if (eq i 1)}}middle{{/if}} {{#if (and (eq i 1) ../critical)}}critical-die{{/if}}" style="flex: 0 0 40px !important; width: 40px !important; height: 40px !important; display: grid !important; place-items: center !important;">
-      {{#if (and (eq i 1) ../critical)}}★{{else}}{{die}}{{/if}}
-    </div>
-  {{/each}}
- </div>
- 
- <!-- ТЕКСТОВЫЕ КНОПКИ ПЕРЕБРОСА -->
- <div class="reroll-row" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important;">
-  {{#each dice as |die i|}}
-    <div class="reroll-cell" style="flex: 0 0 40px !important; display: flex !important; flex-direction: column !important; gap: 5px !important; align-items: center !important;">
-      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="advantage" title="С преимуществом" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">Преим.</button>
+    <!-- ЕДИНАЯ КОЛОНКА ДЛЯ ОДНОГО КУБИКА И ЕГО КНОПОК -->
+    <div class="die-column" style="display: flex !important; flex-direction: column !important; align-items: center !important; gap: 5px !important;">
       
-      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="disadvantage" title="С помехой" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#d34a53'" onmouseout="this.style.color='#888'">Помеха</button>
+      <!-- САМ КУБИК -->
+      <div class="roll-die {{#if (eq i 1)}}middle{{/if}} {{#if (and (eq i 1) ../critical)}}critical-die{{/if}}" style="flex: 0 0 40px !important; width: 40px !important; height: 40px !important; display: grid !important; place-items: center !important;">
+        {{#if (and (eq i 1) ../critical)}}★{{else}}{{die}}{{/if}}
+      </div>
+      
+      <!-- КНОПКИ ПОД КУБИКОМ -->
+      <div class="buttons-column" style="display: flex !important; flex-direction: column !important; gap: 3px !important; width: 40px !important; align-items: center !important;">
+        <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="advantage" title="С преимуществом" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#888'">Преим.</button>
+        <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="disadvantage" title="С помехой" style="background: transparent !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; font-size: 8.5px !important; color: #888 !important; cursor: pointer !important; text-transform: uppercase !important; font-weight: bold !important; line-height: 1 !important;" onmouseover="this.style.color='#d34a53'" onmouseout="this.style.color='#888'">Помеха</button>
+      </div>
+
     </div>
   {{/each}}
+  
  </div>
  
  {{else}}
