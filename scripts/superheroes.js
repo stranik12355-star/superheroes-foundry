@@ -319,7 +319,6 @@ class SuperheroesActorSheet extends ActorSheet {
       await this.actor.update({ name: val });
     });
 
-    // --- СОХРАНЕНИЕ ВРЕМЕННОГО ФОКУСА ---
     html.on("change.superheroes", ".temp-focus-input", async e => {
       e.preventDefault();
       const el = e.currentTarget;
@@ -330,7 +329,6 @@ class SuperheroesActorSheet extends ActorSheet {
         await this.actor.update({"system.powers": arr}, {render: false});
       }
     });
-    // -------------------------------------
     
     html.on("click", ".token-slot", async e => {
       e.preventDefault();
@@ -451,50 +449,45 @@ class SuperheroesActorSheet extends ActorSheet {
     });
   }
 
-  /* === ПЕРЕТАСКИВАНИЕ ДЛЯ СОРТИРОВКИ ВНУТРИ ЛИСТА === */
-  _onDragStart(event) {
-    const el = event.currentTarget.closest(".list-item");
-    if (!el) return;
-    const dragData = {
-      type: "SortItem",
-      listType: el.dataset.listType,
-      index: Number(el.dataset.index)
-    };
-    event.dataTransfer.setData("text/plain", JSON.stringify(dragData));
-  }
-
+  /* === ПРАВИЛЬНЫЙ ПЕРЕХВАТ ДРОПА (СОРТИРОВКА + БИБЛИОТЕКА) === */
   async _onDrop(event) {
-    event.preventDefault();
-    const dataString = event.dataTransfer.getData("text/plain");
-    if (!dataString) return super._onDrop(event);
+    // Пытаемся прочитать данные
+    const dataString = event.dataTransfer?.getData("text/plain");
+    if (dataString) {
+      try {
+        const data = JSON.parse(dataString);
+        
+        // Если это наша внутренняя сортировка
+        if (data.type === "SortItem") {
+          event.preventDefault(); // Останавливаем стандартное поведение
 
-    let data;
-    try { data = JSON.parse(dataString); } catch (e) { return super._onDrop(event); }
+          const dropTarget = event.target.closest(".list-item");
+          if (!dropTarget) return false;
 
-    // Если это сортировка внутри листа
-    if (data.type === "SortItem") {
-      const dropTarget = event.target.closest(".list-item");
-      if (!dropTarget) return;
+          const listType = data.listType;
+          if (dropTarget.dataset.listType !== listType) return false;
 
-      const listType = data.listType;
-      if (dropTarget.dataset.listType !== listType) return;
+          const fromIndex = data.index;
+          const toIndex = Number(dropTarget.dataset.index);
 
-      const fromIndex = data.index;
-      const toIndex = Number(dropTarget.dataset.index);
+          if (fromIndex === toIndex) return false;
 
-      if (fromIndex === toIndex) return;
+          const arr = clone(this.actor.system[listType] || []);
+          const item = arr.splice(fromIndex, 1)[0];
+          arr.splice(toIndex, 0, item);
 
-      const arr = clone(this.actor.system[listType] || []);
-      const item = arr.splice(fromIndex, 1)[0];
-      arr.splice(toIndex, 0, item);
-
-      await this.actor.update({[`system.${listType}`]: arr});
-      return false;
+          await this.actor.update({[`system.${listType}`]: arr});
+          return false; // Сортировка завершена, дальше ничего делать не надо
+        }
+      } catch (e) {
+        // Если JSON не распарсился или это не сортировка — идем дальше
+      }
     }
-
-    return super._onDropItem(event, data);
+    
+    // Если это не наша сортировка — отдаем стандартному механизму Foundry
+    // Он сам по цепочке вызовет наш _onDropItem()
+    return super._onDrop(event);
   }
-  /* ================================================== */
 
   async _onDropItem(event, data) {
     if (!this.isEditable) return false;
@@ -522,7 +515,7 @@ class SuperheroesActorSheet extends ActorSheet {
         reaction: Boolean(item.system?.reaction),
         concentration: Boolean(item.system?.concentration),
         active: false,
-        tempFocus: 0 // Добавляем поле для временного фокуса
+        tempFocus: 0 
       });
       await this.actor.update({ "system.powers": arr }, { render: false });
       this.render(false);
