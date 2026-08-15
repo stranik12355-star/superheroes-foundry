@@ -355,38 +355,54 @@
 .superheroes.sheet .stat-icon-vigilance{background-image:url('../assets/icons/vigilance.png') !important;}
 .superheroes.sheet .stat-icon-ego{background-image:url('../assets/icons/ego.png') !important;}
 .superheroes.sheet .stat-icon-logic{background-image:url('../assets/icons/logic.png') !important;}
-/* ВЫРАВНИВАНИЕ КУБИКОВ И КНОПОК В РЯД (СЛЕВА НАПРАВО) */
+/* =====================================================
+   ЖЕЛЕЗНОЕ ВЫРАВНИВАНИЕ КУБОВ СПРАВА НАЛЕВО
+   ===================================================== */
 
-/* 1. Контейнеры для кубиков и кнопок делаем Flex-блоками */
-.dice-line,
-.reroll-row,
-.superheroes-dice-tooltip-row,
-.superheroes-reroll-grid {
+/* 1. Контейнеры кубиков: выстраиваем СПРАВА НАЛЕВО (row-reverse) */
+.sh-chat-card .dice-line,
+.superheroes-tooltip .superheroes-dice-tooltip-row {
     display: flex !important;
-    flex-direction: row !important;
-    justify-content: center !important; /* Центрируем по горизонтали */
-    align-items: flex-start !important; /* Выравниваем по верхнему краю */
-    gap: 15px !important;               /* Расстояние между кубиками (можно менять) */
+    flex-direction: row-reverse !important; /* ИМЕННО СПРАВА НАЛЕВО */
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 8px !important;
+    list-style: none !important;
     padding: 0 !important;
-    margin: 10px 0 !important;
-    list-style: none !important;        /* Убираем точки у списка <ol> */
+    margin: 5px 0 !important;
 }
 
-/* 2. Запрещаем кубикам и кнопкам сплющиваться в "полоски" */
-.roll-die,
-.reroll-cell,
-.superheroes-reroll-cell,
-.superheroes-dice-tooltip-row .roll {
-    flex: 0 0 auto !important; /* Важное правило: запрещает сжиматься */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* 2. Защищаем сами кубики от сплющивания (СОХРАНЯЕМ ТВОЙ GRID) */
+.sh-chat-card .roll-die,
+.superheroes-tooltip .superheroes-dice-tooltip-row .roll {
+    flex: 0 0 auto !important; 
+    display: grid !important; /* Сохраняем твою центровку цифр */
+    place-items: center !important;
 }
 
-/* 3. Кнопки Преимущество/Помеха внутри ячеек тоже ставим друг под другом ровно */
-.reroll-cell button,
-.superheroes-reroll-cell button {
-    margin-bottom: 5px;
-    width: 100%;
-    white-space: nowrap; /* Чтобы текст на кнопке не переносился */
+/* 3. Контейнеры кнопок под кубиками (тоже выстраиваем справа налево) */
+.sh-chat-card .reroll-row,
+.superheroes-tooltip .superheroes-reroll-grid {
+    display: flex !important;
+    flex-direction: row-reverse !important; 
+    justify-content: center !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+}
+
+/* 4. Защищаем колонки с кнопками "Преимущество/Помеха" */
+.sh-chat-card .reroll-cell,
+.superheroes-tooltip .superheroes-reroll-cell {
+    flex: 0 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 3px !important;
+}
+
+/* 5. Фикс ширины самих кнопок */
+.sh-chat-card .reroll-cell button,
+.superheroes-tooltip .superheroes-reroll-cell button {
+    width: 100% !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
 }
