@@ -101,7 +101,7 @@ class SuperheroesRoll extends Roll {
   }
   async toMessage(messageData={},options={}){
     if(!this._evaluated) await this.evaluate({async:true});
-    messageData.flavor = messageData.flavor || "";   // убрали заголовок сверху
+    messageData.flavor = messageData.flavor || "";
     options.rollMode = options.rollMode ?? this.options.rollMode;
     return super.toMessage(messageData,options);
   }
@@ -122,7 +122,7 @@ function isSuperheroesRoll(roll){
 /* ===== Название броска кладётся в options.flavor (белая линия) ===== */
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
-  roll.options.flavor = flavor;                        // попадёт в {{flavor}} в roll.hbs
+  roll.options.flavor = flavor;
   await roll.evaluate({async:true});
   return roll.toMessage({
     speaker:ChatMessage.getSpeaker({actor}),
@@ -204,7 +204,7 @@ async function rollDamageFromMessage(messageId){
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
   const flags=message.flags?.superheroes||{};
   const multiplier=Math.max(1,Number(flags.damageMultiplier)||1);
-  const bonus=Number(flags.stable)||0;   // уже = мод статуса + стабильный урон
+  const bonus=Number(flags.stable)||0;
 
   const damageRoll=new Roll("1d6");
   await damageRoll.evaluate({async:true});
@@ -271,14 +271,15 @@ class SuperheroesActorSheet extends ActorSheet {
       const max=field==="health"?resourceMax(s.stats.endurance.value,s.health.bonus):resourceMax(s.stats.vigilance.value,s.focus.bonus);
       return this.actor.update({["system."+field+".value"]:Math.min(max,raw)});
     });
-	html.on("change.superheroes","[data-edit-field]",async e=>{
+    html.on("change.superheroes","[data-edit-field]",async e=>{
       const el=e.currentTarget, field=el.dataset.editField, type=el.dataset.type, index=Number(el.dataset.index);
       if(!["powers","traits","gear"].includes(type)) return;
-      const s=mergeDefaults(this.actor.system), arr=clone(s[type]||[]);
+      
+      const arr=clone(this.actor.system[type]||[]);
       if(!arr[index]) return;
       
       let value = el.value;
-      if (field === "cost") value = Number(value) || 0; // Превращаем в чистое число
+      if (field === "cost") value = Number(value) || 0;
       
       arr[index]={...arr[index],[field]:value};
       await this.actor.update({["system."+type]:arr},{render:false});
@@ -294,34 +295,49 @@ class SuperheroesActorSheet extends ActorSheet {
   async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(function(el){el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action='edit-bio']");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field='nickname']")?.focus();}
   async _editToken(){try{const token=this.actor.prototypeToken;if(typeof TokenConfig==="function")new TokenConfig(token).render(true);else if(foundry?.applications?.sheets?.TokenConfig)new foundry.applications.sheets.TokenConfig({document:token}).render(true);else ui.notifications.warn("Окно настройки токена недоступно в этой версии Foundry.");}catch(err){console.error(err);ui.notifications.error("Не удалось открыть настройки токена.");}}
   _listLabel(type){return type==="powers"?"способность":type==="traits"?"особенность":"снаряжение";}
+  
   async _toggleEdit(type){
     if(!this._editing) this._editing={powers:false,traits:false,gear:false};
     this._editing[type]=!this._editing[type];
     this.render(false);
   }
+  
   async _addListRow(type){
     if(!["powers","traits","gear"].includes(type)) return;
-    const s=mergeDefaults(this.actor.system), arr=clone(s[type]||[]);
+    const arr=clone(this.actor.system[type]||[]);
     arr.push({name:"",description:""});
     await this.actor.update({["system."+type]:arr},{render:false});
     this.render(false);
   }
+  
   async _toggleRowLock(row){
     if(!row) return;
     const editor=row.closest("[data-editor-type]");
     const type=editor?.dataset.editorType;
     const index=Number(row.dataset.row);
     if(!["powers","traits","gear"].includes(type) || Number.isNaN(index)) return;
-    const s=mergeDefaults(this.actor.system), arr=clone(s[type]||[]);
+    const arr=clone(this.actor.system[type]||[]);
     if(!arr[index]) return;
     arr[index].locked=!arr[index].locked;
     await this.actor.update({["system."+type]:arr},{render:false});
     this.render(false);
   }
-  async _deleteListItem(type,index){const s=mergeDefaults(this.actor.system),arr=clone(s[type]);arr.splice(index,1);await this.actor.update({["system."+type]:arr},{render:false});this.render(false);}
+  
+  async _deleteListItem(type,index){
+    const arr=clone(this.actor.system[type]||[]);
+    arr.splice(index,1);
+    await this.actor.update({["system."+type]:arr},{render:false});
+    this.render(false);
+  }
+
   async _sendItem(type, index) {
-    const item = mergeDefaults(this.actor.system)[type][index];
-    if (!item) return;
+    const itemArray = this.actor.system[type];
+    const item = itemArray ? itemArray[index] : null;
+
+    if (!item) {
+      console.error(`Супергерои | Ошибка: предмет ${type} с индексом ${index} не найден.`);
+      return ui.notifications.warn("Не удалось найти данные для отправки.");
+    }
 
     const esc = foundry.utils.escapeHTML;
     const title = type === "powers" ? "СПОСОБНОСТЬ" : type === "traits" ? "ОСОБЕННОСТЬ" : "СНАРЯЖЕНИЕ";
@@ -329,12 +345,10 @@ class SuperheroesActorSheet extends ActorSheet {
     let meta = "";
     if (type === "powers") {
       const metaItems = [];
-      // Если стоимость больше нуля, создаем плашку
       if (item.cost && Number(item.cost) > 0) {
-        metaItems.push(`<span>ФОКУС: ${esc(item.cost)}</span>`);
+        metaItems.push(`<span style="padding: 2px 5px; background: #b7323c; color: #fff; border-radius: 4px; font-weight: bold;">ФОКУС: ${esc(item.cost)}</span>`);
       }
       
-      // На будущее: если добавишь в HTML поля дальности или урона, они тут тоже подхватятся
       if (item.movement) metaItems.push(`<span>Перемещение: ${esc(item.movement)}</span>`);
       if (item.range) metaItems.push(`<span>Дальность: ${esc(item.range)}</span>`);
       if (item.damageType) metaItems.push(`<span>Тип урона: ${esc(item.damageType)}</span>`);
@@ -344,7 +358,6 @@ class SuperheroesActorSheet extends ActorSheet {
       }
     }
 
-    // Сохраняем абзацы в описании (заменяем переносы строк на <br>)
     const descriptionFormatted = esc(item.description || "").replace(/\n/g, '<br>');
 
     await ChatMessage.create({
