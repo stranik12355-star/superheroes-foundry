@@ -246,6 +246,20 @@ class SuperheroesActorSheet extends ActorSheet {
   }
   activateListeners(html){
     super.activateListeners(html); html.off(".superheroes");
+    
+    // ЖИВАЯ СИНХРОНИЗАЦИЯ ИМЕНИ: Меняет текст везде во время набора
+    html.on("input", ".actor-name, input[data-bio-field='name']", e => {
+      const val = e.currentTarget.value;
+      html.find(".actor-name").val(val);
+      html.find("input[data-bio-field='name']").val(val);
+    });
+
+    // СОХРАНЕНИЕ ГЛАВНОГО ИМЕНИ (Шапка) ПРИ ПОТЕРЕ ФОКУСА
+    html.on("change.superheroes", ".actor-name", async e => {
+      const val = e.currentTarget.value;
+      await this.actor.update({ name: val, "system.biography.name": val }, {render: false});
+    });
+    
     html.on("click.superheroes","[data-action]",async e=>{
       e.preventDefault();e.stopPropagation();const el=e.currentTarget,a=el.dataset.action;
       try{
@@ -271,11 +285,17 @@ class SuperheroesActorSheet extends ActorSheet {
       }catch(err){console.error("Супергерои | действие листа",a,err);ui.notifications.error("Не удалось выполнить действие. Подробности в консоли.");}
     });
     html.on("click.superheroes",".tab-button",e=>{e.preventDefault();html.find(".tab-button").removeClass("active");html.find(".tab-panel").removeClass("active");e.currentTarget.classList.add("active");html.find(".tab-panel[data-tab='"+e.currentTarget.dataset.tab+"']").addClass("active");});
+    
+    // СОХРАНЕНИЕ ПОЛЕЙ БИОГРАФИИ
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
-      if(field==="name") await this.actor.update({name:value,"system.biography.name":value},{render:false});
-      else await this.actor.update({["system.biography."+field]:value},{render:false});
+      if(field==="name") {
+         await this.actor.update({name:value,"system.biography.name":value},{render:false});
+      } else {
+         await this.actor.update({["system.biography."+field]:value},{render:false});
+      }
     });
+    
     html.on("change.superheroes","input[data-action='resource-current']",e=>{
       const field = e.currentTarget.dataset.field;
       const s = mergeDefaults(this.actor.system);
@@ -284,11 +304,12 @@ class SuperheroesActorSheet extends ActorSheet {
       if(field === "karma") return this.actor.update({"system.karma": raw});
       
       const max = field === "health" ? resourceMax(s.stats.endurance.value, s.health.bonus) : resourceMax(s.stats.vigilance.value, s.focus.bonus);
-      raw = Math.min(max, raw); // Жестко обрезаем по максимуму
+      raw = Math.min(max, raw); 
       
-      e.currentTarget.value = raw; // Визуально возвращаем правильную цифру в окно
+      e.currentTarget.value = raw; 
       return this.actor.update({[`system.${field}.value`]: raw});
     });
+    
     html.on("change.superheroes","[data-edit-field]",async e=>{
       const el=e.currentTarget, field=el.dataset.editField, type=el.dataset.type, index=Number(el.dataset.index);
       if(!["powers","traits","gear"].includes(type)) return;
