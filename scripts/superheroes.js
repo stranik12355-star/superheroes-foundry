@@ -395,10 +395,10 @@ class SuperheroesActorSheet extends ActorSheet {
     return super._onDropItem(event, data);
   }
 
-  /* === 100% РАБОЧИЙ ВЫЗОВ ОКНА ТОКЕНА ДЛЯ FOUNDRY V12 === */
+  /* === ПРАВИЛЬНЫЙ ВЫЗОВ ОКНА ПРОТОТИПА ТОКЕНА ДЛЯ FOUNDRY V12 === */
   async _editToken(){
     try {
-      new CONFIG.Token.sheetClass(this.actor.prototypeToken).render(true);
+      new CONFIG.Token.prototypeSheetClass(this.actor.prototypeToken).render(true);
     } catch(err) {
       console.error("Супергерои | Ошибка открытия токена:", err);
       ui.notifications.error("Не удалось открыть настройки токена.");
@@ -529,11 +529,11 @@ Hooks.on("preCreateActor", function(actor) {
   actor.updateSource({
     system: s,
     prototypeToken: {
-      actorLink: true,                            // Связываем ХП токена и листа
-      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Имя всегда отображается
-      displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Полоски всегда отображаются
-      bar1: { attribute: "health" },              // Полоса 1 = Здоровье (снизу)
-      bar2: { attribute: "focus" }                // Полоса 2 = Фокус (сверху)
+      actorLink: true,                            
+      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, 
+      displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS, 
+      bar1: { attribute: "health" },              
+      bar2: { attribute: "focus" }                
     }
   });
 });
@@ -553,7 +553,6 @@ Hooks.on("preUpdateActor", function(actor, changes) {
   if(s.health.value > hp) foundry.utils.setProperty(changes, "system.health.value", hp);
   if(s.focus.value > focus) foundry.utils.setProperty(changes, "system.focus.value", focus);
   
-  // Автоматически передаем новое имя в биографию и в настройки токена
   if(changes.name) {
     foundry.utils.setProperty(changes, "system.biography.name", changes.name);
     foundry.utils.setProperty(changes, "prototypeToken.name", changes.name);
@@ -562,7 +561,6 @@ Hooks.on("preUpdateActor", function(actor, changes) {
 
 /* === ОБНОВЛЕНИЕ ИМЕНИ У ТОКЕНОВ НА КАРТЕ === */
 Hooks.on("updateActor", function(actor, changes) {
-  // Если имя изменилось, мгновенно меняем его у всех выставленных токенов на карте
   if (changes.name && canvas.ready) {
     const tokens = actor.getActiveTokens();
     const tokenUpdates = tokens.map(t => ({ _id: t.id, name: changes.name }));
