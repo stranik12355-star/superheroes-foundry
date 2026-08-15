@@ -310,6 +310,26 @@ class SuperheroesActorSheet extends ActorSheet {
     this.render(false);
   }
   
+  async _toggleRowLock(row){
+    if(!row) return;
+    const editor=row.closest("[data-editor-type]");
+    const type=editor?.dataset.editorType;
+    const index=Number(row.dataset.row);
+    if(!["powers","traits","gear"].includes(type) || Number.isNaN(index)) return;
+    const arr=clone(this.actor.system[type]||[]);
+    if(!arr[index]) return;
+    arr[index].locked=!arr[index].locked;
+    await this.actor.update({["system."+type]:arr},{render:false});
+    this.render(false);
+  }
+  
+  async _deleteListItem(type,index){
+    const arr=clone(this.actor.system[type]||[]);
+    arr.splice(index,1);
+    await this.actor.update({["system."+type]:arr},{render:false});
+    this.render(false);
+  }
+
   async _sendItem(type, index) {
     const itemArray = this.actor.system[type];
     const item = itemArray ? itemArray[index] : null;
@@ -319,7 +339,6 @@ class SuperheroesActorSheet extends ActorSheet {
       return ui.notifications.warn("Не удалось найти данные для отправки.");
     }
 
-    // НАША НОВАЯ ЖЕЛЕЗОБЕТОННАЯ ЗАЩИТА ТЕКСТА (вместо сломанной из Фаундри)
     const esc = (str) => {
       if (!str) return "";
       return String(str)
