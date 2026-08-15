@@ -233,6 +233,7 @@ function safe(v){return foundry.utils.escapeHTML(v??"");}
 
 class SuperheroesActorSheet extends ActorSheet {
   static get defaultOptions(){return foundry.utils.mergeObject(super.defaultOptions,{classes:["superheroes","sheet","actor"],template:"systems/superheroes/templates/actor-sheet.hbs",width:900,height:820,resizable:true,submitOnChange:false});}
+  
   getData(options={}){
     const data=super.getData(options),system=mergeDefaults(this.actor.system);
     if(!system.biography.name)system.biography.name=this.actor.name;
@@ -244,6 +245,31 @@ class SuperheroesActorSheet extends ActorSheet {
     data.editable=this.isEditable;
     return data;
   }
+
+  /* --- ПЕРЕХВАТЧИК ФАЙЛОВОГО МЕНЕДЖЕРА ДЛЯ ПОРТРЕТОВ --- */
+  _onEditImage(event) {
+    const attr = event.currentTarget.dataset.edit;
+    const current = foundry.utils.getProperty(this.actor, attr);
+    new FilePicker({
+      type: "image",
+      current: current,
+      callback: async path => {
+        // 1. Визуально обновляем все картинки в чарнике (Шапка и Биография)
+        this.element.find(`img[data-edit='${attr}']`).attr("src", path);
+        
+        // 2. Сохраняем в базу (обновит боковое меню) и меняем Токен
+        if (attr === "img") {
+          await this.actor.update({ 
+            img: path, 
+            "prototypeToken.texture.src": path 
+          });
+        } else {
+          await this.actor.update({ [attr]: path });
+        }
+      }
+    }).browse();
+  }
+
   activateListeners(html){
     super.activateListeners(html); html.off(".superheroes");
     
@@ -254,7 +280,7 @@ class SuperheroesActorSheet extends ActorSheet {
       html.find("input[data-bio-field='name']").val(val);
     });
 
-    // СОХРАНЕНИЕ ГЛАВНОГО ИМЕНИ: Убрал render: false, чтобы обновилось боковое меню!
+    // СОХРАНЕНИЕ ГЛАВНОГО ИМЕНИ
     html.on("change.superheroes", ".actor-name", async e => {
       const val = e.currentTarget.value;
       await this.actor.update({ name: val, "system.biography.name": val });
@@ -290,7 +316,6 @@ class SuperheroesActorSheet extends ActorSheet {
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
       if(field==="name") {
-         // Тоже убрал render: false для имени, чтобы боковое меню обновлялось!
          await this.actor.update({name:value,"system.biography.name":value});
       } else {
          await this.actor.update({["system.biography."+field]:value},{render:false});
