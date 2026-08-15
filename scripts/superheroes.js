@@ -15,7 +15,6 @@ const SH_DEFAULTS = {
     logic:{value:10,defense:0,nonCombat:0,hit:0,multiplier:0,stable:0}
   },
   powers: [], traits: [], gear: [],
-  // 15 пустых слотов для галереи токенов
   tokenGallery: ["", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]
 };
 const clone = o => foundry.utils.deepClone(o);
@@ -292,6 +291,25 @@ class SuperheroesActorSheet extends ActorSheet {
   activateListeners(html){
     super.activateListeners(html); html.off(".superheroes");
     
+    // --- ПАМЯТЬ ДЛЯ ВКЛАДОК ---
+    if (this._activeTab) {
+      html.find(".tab-button").removeClass("active");
+      html.find(".tab-panel").removeClass("active");
+      html.find(`.tab-button[data-tab='${this._activeTab}']`).addClass("active");
+      html.find(`.tab-panel[data-tab='${this._activeTab}']`).addClass("active");
+    }
+
+    html.on("click.superheroes", ".tab-button", e => {
+      e.preventDefault();
+      html.find(".tab-button").removeClass("active");
+      html.find(".tab-panel").removeClass("active");
+      const tab = e.currentTarget.dataset.tab;
+      e.currentTarget.classList.add("active");
+      html.find(`.tab-panel[data-tab='${tab}']`).addClass("active");
+      this._activeTab = tab; // Запоминаем текущую вкладку
+    });
+    // ---------------------------
+
     html.on("input", ".actor-name, input[data-bio-field='name']", e => {
       const val = e.currentTarget.value;
       html.find(".actor-name").val(val);
@@ -382,7 +400,6 @@ class SuperheroesActorSheet extends ActorSheet {
         }
       }catch(err){console.error("Супергерои | действие листа",a,err);ui.notifications.error("Не удалось выполнить действие. Подробности в консоли.");}
     });
-    html.on("click.superheroes",".tab-button",e=>{e.preventDefault();html.find(".tab-button").removeClass("active");html.find(".tab-panel").removeClass("active");e.currentTarget.classList.add("active");html.find(".tab-panel[data-tab='"+e.currentTarget.dataset.tab+"']").addClass("active");});
     
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
