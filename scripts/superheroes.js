@@ -130,7 +130,6 @@ function isSuperheroesRoll(roll){
   return !!(pool?.rolls?.length===3 && pool.rolls[1]?.terms?.[0] instanceof SuperheroesDie);
 }
 
-/* ===== Название броска кладётся в options.flavor (белая линия) ===== */
 async function make3d6Roll(actor,formula,flavor,flags={}){
   const roll=new SuperheroesRoll(formula,actor.getRollData());
   roll.options.flavor = flavor;
@@ -209,7 +208,6 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   return roll;
 }
 
-/* ===== УРОН: слово "УРОН", стабильный НЕ удваивается ===== */
 async function rollDamageFromMessage(messageId){
   const message=game.messages.get(messageId), roll=message?.rolls?.[0];
   if(!message||!roll||!isSuperheroesRoll(roll)) return;
@@ -231,6 +229,23 @@ async function rollDamageFromMessage(messageId){
 function showDialog(content,title,callback){new Dialog({title,content,buttons:{save:{label:"Сохранить",callback},cancel:{label:"Отмена"}},default:"save"}).render(true);}
 function safe(v){return foundry.utils.escapeHTML(v??"");}
 
+/* --- КЛАСС ЛИСТА ПРЕДМЕТА (ДЛЯ БИБЛИОТЕКИ) --- */
+class SuperheroesItemSheet extends ItemSheet {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      classes: ["superheroes", "sheet", "item"],
+      width: 400,
+      height: 320,
+      template: "systems/superheroes/templates/item-sheet.hbs"
+    });
+  }
+  getData(options) {
+    const data = super.getData(options);
+    data.system = this.item.system;
+    return data;
+  }
+}
+
 class SuperheroesActorSheet extends ActorSheet {
   static get defaultOptions(){return foundry.utils.mergeObject(super.defaultOptions,{classes:["superheroes","sheet","actor"],template:"systems/superheroes/templates/actor-sheet.hbs",width:900,height:820,resizable:true,submitOnChange:false});}
   
@@ -246,7 +261,6 @@ class SuperheroesActorSheet extends ActorSheet {
     return data;
   }
 
-  /* --- ПЕРЕХВАТЧИК ФАЙЛОВОГО МЕНЕДЖЕРА ДЛЯ ПОРТРЕТОВ --- */
   _onEditImage(event) {
     const attr = event.currentTarget.dataset.edit;
     const current = foundry.utils.getProperty(this.actor, attr);
@@ -301,7 +315,6 @@ class SuperheroesActorSheet extends ActorSheet {
         if(a==="edit-bio")return this._editBiography();
         if(a==="edit-token")return this._editToken();
         
-        // --- ОТКРЫТИЕ БИБЛИОТЕКИ ---
         if(a==="open-compendium"){
           const pack = game.packs.get("superheroes.traits");
           if(pack) return pack.render(true);
@@ -343,7 +356,6 @@ class SuperheroesActorSheet extends ActorSheet {
     });
   }
 
-  /* --- ПЕРЕХВАТ ПЕРЕТАСКИВАНИЯ ИЗ БИБЛИОТЕКИ --- */
   async _onDropItem(event, data) {
     if (!this.isEditable) return false;
     
@@ -358,7 +370,7 @@ class SuperheroesActorSheet extends ActorSheet {
       });
       await this.actor.update({ "system.traits": arr }, { render: false });
       this.render(false);
-      return false; // Отменяем стандартное создание предмета
+      return false; 
     }
     
     return super._onDropItem(event, data);
@@ -469,8 +481,12 @@ Hooks.once("init",()=>{
   CONFIG.Dice.terms.s=SuperheroesDie;
   if(!CONFIG.Dice.types.includes(SuperheroesDie))CONFIG.Dice.types.push(SuperheroesDie);
   CONFIG.Dice.rolls.push(SuperheroesRoll);
+  
+  // Регистрация листов
   Actors.registerSheet("superheroes",SuperheroesActorSheet,{types:["character"],makeDefault:true,label:"Лист персонажа"});
+  Items.registerSheet("superheroes",SuperheroesItemSheet,{makeDefault:true,label:"Лист предмета"});
 });
+
 Hooks.once("ready",function(){if(game.dice3d)registerDiceSoNice(game.dice3d);});
 Hooks.once("diceSoNiceReady",function(dice3d){registerDiceSoNice(dice3d);});
 function registerDiceSoNice(dice3d){try{dice3d.addDicePreset({type:"s",labels:["★","2","3","4","5","6"],colorset:"red",system:"standard"});dice3d.addDicePreset({type:"d6",labels:["1","2","3","4","5","6"],colorset:"white",system:"standard"});}catch(err){console.warn("Супергерои | Dice So Nice",err);}}
@@ -493,41 +509,27 @@ Hooks.on("preUpdateActor", function(actor, changes) {
 Hooks.on("renderChatMessage",function(message,html){const root=html[0]||html;root.querySelectorAll("button.retroEdgeMode").forEach(function(button){button.addEventListener("click",async function(e){e.preventDefault();e.stopPropagation();try{await rerollSuperheroesDie(message.id,Number(e.currentTarget.dataset.index),e.currentTarget.dataset.retroAction);}catch(err){console.error("Супергерои | переброс",err);ui.notifications.error("Не удалось перебросить выбранную кость: "+err.message);}});});if(message.flags?.superheroes?.kind==="attack"&&!root.querySelector("button.superheroes-damage")){const b=document.createElement("button");b.type="button";b.className="superheroes-damage";b.textContent="Урон";root.querySelector(".dice-total")?.after(b);}const damage=root.querySelector("button.superheroes-damage");if(damage)damage.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();rollDamageFromMessage(message.id);});});
 window.SuperheroesSystem={SuperheroesDie,SuperheroesRoll,createCheckRoll,createNonCombatRoll,createAttackRoll,rerollSuperheroesDie};
 
-/* --- АВТОЗАПОЛНЕНИЕ БИБЛИОТЕКИ ОСОБЕННОСТЕЙ --- */
+/* --- АВТОЗАПОЛНЕНИЕ БИБЛИОТЕКИ --- */
 Hooks.once("ready", async function() {
-  // 1. Проверяем, что зашел Мастер игры (игрокам запрещено редактировать компендиумы)
   if (!game.user.isGM) return;
-
   const pack = game.packs.get("superheroes.traits");
-  
-  // 2. Если папка пустая и есть наш список
   if (pack && pack.index.size === 0 && window.SuperheroesTraitsLibrary) {
-    console.log("Супергерои | Заполняю библиотеку особенностей...");
-
-    // 3. Запоминаем текущее состояние и СНИМАЕМ ЗАМОК
     const wasLocked = pack.locked;
-    if (wasLocked) {
-      await pack.configure({ locked: false });
-    }
+    if (wasLocked) await pack.configure({ locked: false });
 
-    // 4. Формируем предметы для добавления
     const itemsToCreate = window.SuperheroesTraitsLibrary.map(t => ({
       name: t.name,
       type: "trait",
       system: { description: t.description }
     }));
 
-    // 5. Записываем в компендиум
     try {
       await Item.createDocuments(itemsToCreate, { pack: pack.collection });
-      ui.notifications.info("Библиотека особенностей успешно создана!");
+      // Уведомление убрано, чтобы не спамило
     } catch (err) {
-      console.error("Супергерои | Ошибка записи в библиотеку:", err);
+      console.error("Супергерои | Ошибка записи:", err);
     }
 
-    // 6. ВЕШАЕМ ЗАМОК ОБРАТНО (для безопасности)
-    if (wasLocked) {
-      await pack.configure({ locked: true });
-    }
+    if (wasLocked) await pack.configure({ locked: true });
   }
 });
