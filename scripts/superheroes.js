@@ -1,8 +1,8 @@
 /* СУПЕРГЕРОИ — Foundry VTT 12 */
 const SH_DEFAULTS = {
   rank: 1, karma: 1,
-  health: { value: 10, bonus: 0, max: 10 }, // Добавлено max для токенов
-  focus: { value: 10, bonus: 0, max: 10 },  // Добавлено max для токенов
+  health: { value: 10, bonus: 0, max: 10 },
+  focus: { value: 10, bonus: 0, max: 10 },
   initiative: { bonus: 0 },
   speed: { running: 0, climbing: 0, swimming: 0, jumping: 0, flying: 0 },
   biography: { name:"", nickname:"", age:"", gender:"", height:"", weight:"", eyes:"", hair:"", history:"", notes:"" },
@@ -43,7 +43,6 @@ function resourceMax(value,bonus=0){
   return Math.max(10,base+Number(bonus||0));
 }
 
-/* === МЕХАНИКА ВЫЧИСЛЕНИЯ СТАТОВ (включая БЕРСЕРКА) === */
 function statDerived(actor,key){
   const system=mergeDefaults(actor.system),s=system.stats[key],mod=statMod(s.value);
   const ncMod = (s.value + s.nonCombat) - 10;
@@ -300,7 +299,7 @@ class SuperheroesActorSheet extends ActorSheet {
 
     html.on("change.superheroes", ".actor-name", async e => {
       const val = e.currentTarget.value;
-      await this.actor.update({ name: val, "system.biography.name": val });
+      await this.actor.update({ name: val });
     });
     
     html.on("click.superheroes","[data-action]",async e=>{
@@ -348,7 +347,7 @@ class SuperheroesActorSheet extends ActorSheet {
     html.on("change.superheroes","[data-bio-field]",async e=>{
       const field=e.currentTarget.dataset.bioField,value=e.currentTarget.value??"";
       if(field==="name") {
-         await this.actor.update({name:value,"system.biography.name":value});
+         await this.actor.update({name:value});
       } else {
          await this.actor.update({["system.biography."+field]:value},{render:false});
       }
@@ -396,6 +395,16 @@ class SuperheroesActorSheet extends ActorSheet {
     return super._onDropItem(event, data);
   }
 
+  /* === 100% РАБОЧИЙ ВЫЗОВ ОКНА ТОКЕНА ДЛЯ FOUNDRY V12 === */
+  async _editToken(){
+    try {
+      new CONFIG.Token.sheetClass(this.actor.prototypeToken).render(true);
+    } catch(err) {
+      console.error("Супергерои | Ошибка открытия токена:", err);
+      ui.notifications.error("Не удалось открыть настройки токена.");
+    }
+  }
+
   async _editRank(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Ранг (1–5)</label><input id="rank" type="number" min="1" max="5" value="'+s.rank+'"></div>',"Ранг",async h=>this.actor.update({"system.rank":Math.min(5,Math.max(1,Number(h.find("#rank").val())||1))}));}
   async _editHealth(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Дополнительный максимум здоровья</label><input id="bonus" type="number" value="'+s.health.bonus+'"></div>',"Настройки здоровья",async h=>this.actor.update({"system.health.bonus":Number(h.find("#bonus").val())||0}));}
   async _editFocus(){const s=mergeDefaults(this.actor.system);showDialog('<div class="sh-dialog"><label>Дополнительный максимум фокуса</label><input id="bonus" type="number" value="'+s.focus.bonus+'"></div>',"Настройки фокуса",async h=>this.actor.update({"system.focus.bonus":Number(h.find("#bonus").val())||0}));}
@@ -404,16 +413,6 @@ class SuperheroesActorSheet extends ActorSheet {
   async _sleep(){const s=mergeDefaults(this.actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);await this.actor.update({"system.karma":s.rank,"system.health.value":hp,"system.focus.value":focus});}
   async _editStat(key){const s=mergeDefaults(this.actor.system).stats[key];showDialog('<div class="sh-dialog"><label>Изменение характеристики (от 10)</label><input id="value" type="number" value="'+(s.value-10)+'"><label>Изменение защиты</label><input id="defense" type="number" value="'+s.defense+'"><label>Изменение вне боя</label><input id="nonCombat" type="number" value="'+s.nonCombat+'"><label>Изменение попадания</label><input id="hit" type="number" value="'+s.hit+'"><label>Изменение множителя урона</label><input id="multiplier" type="number" value="'+s.multiplier+'"><label>Изменение стабильного урона</label><input id="stable" type="number" value="'+s.stable+'"></div>',"Настройки — "+game.i18n.localize("SUPERHEROES.Stat."+key),async h=>{const p="system.stats."+key+".";await this.actor.update({[p+"value"]:10+(Number(h.find("#value").val())||0),[p+"defense"]:Number(h.find("#defense").val())||0,[p+"nonCombat"]:Number(h.find("#nonCombat").val())||0,[p+"hit"]:Number(h.find("#hit").val())||0,[p+"multiplier"]:Number(h.find("#multiplier").val())||0,[p+"stable"]:Number(h.find("#stable").val())||0});});}
   async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(function(el){el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action='edit-bio']");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field='nickname']")?.focus();}
-  
-  /* === НОВАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ КНОПКИ ТОКЕНА === */
-  async _editToken(){
-    try {
-      this.actor.prototypeToken.sheet.render(true);
-    } catch(err) {
-      console.error("Супергерои | Ошибка открытия токена:", err);
-      ui.notifications.error("Не удалось открыть настройки токена.");
-    }
-  }
 
   _listLabel(type){return type==="powers"?"способность":type==="traits"?"особенность":"снаряжение";}
   
@@ -531,15 +530,15 @@ Hooks.on("preCreateActor", function(actor) {
     system: s,
     prototypeToken: {
       actorLink: true,                            // Связываем ХП токена и листа
-      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Имя всегда отображается (или можно 20 для HOVER)
+      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Имя всегда отображается
       displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Полоски всегда отображаются
-      bar1: { attribute: "health" },              // Верхняя полоса (Зеленая) = Здоровье
-      bar2: { attribute: "focus" }                // Нижняя полоса (Синяя) = Фокус
+      bar1: { attribute: "health" },              // Полоса 1 = Здоровье (снизу)
+      bar2: { attribute: "focus" }                // Полоса 2 = Фокус (сверху)
     }
   });
 });
 
-/* === СОХРАНЕНИЕ MAX-ЗНАЧЕНИЙ ПРИ ОБНОВЛЕНИИ === */
+/* === СИНХРОНИЗАЦИЯ ИМЕНИ И ЗНАЧЕНИЙ ПРИ ОБНОВЛЕНИИ === */
 Hooks.on("preUpdateActor", function(actor, changes) {
   const expandedChanges = foundry.utils.expandObject(changes);
   const merged = foundry.utils.mergeObject(clone(actor.system), expandedChanges.system || {}, {inplace: false, recursive: true});
@@ -548,13 +547,29 @@ Hooks.on("preUpdateActor", function(actor, changes) {
   const hp = resourceMax(s.stats.endurance.value, s.health.bonus);
   const focus = resourceMax(s.stats.vigilance.value, s.focus.bonus);
 
-  // Важно: записываем max в базу, чтобы полоски токена могли их читать!
   foundry.utils.setProperty(changes, "system.health.max", hp);
   foundry.utils.setProperty(changes, "system.focus.max", focus);
   
   if(s.health.value > hp) foundry.utils.setProperty(changes, "system.health.value", hp);
   if(s.focus.value > focus) foundry.utils.setProperty(changes, "system.focus.value", focus);
-  if(foundry.utils.hasProperty(changes, "name")) foundry.utils.setProperty(changes, "system.biography.name", changes.name);
+  
+  // Автоматически передаем новое имя в биографию и в настройки токена
+  if(changes.name) {
+    foundry.utils.setProperty(changes, "system.biography.name", changes.name);
+    foundry.utils.setProperty(changes, "prototypeToken.name", changes.name);
+  }
+});
+
+/* === ОБНОВЛЕНИЕ ИМЕНИ У ТОКЕНОВ НА КАРТЕ === */
+Hooks.on("updateActor", function(actor, changes) {
+  // Если имя изменилось, мгновенно меняем его у всех выставленных токенов на карте
+  if (changes.name && canvas.ready) {
+    const tokens = actor.getActiveTokens();
+    const tokenUpdates = tokens.map(t => ({ _id: t.id, name: changes.name }));
+    if (tokenUpdates.length > 0) {
+      canvas.scene.updateEmbeddedDocuments("Token", tokenUpdates);
+    }
+  }
 });
 
 Hooks.on("renderChatMessage",function(message,html){const root=html[0]||html;root.querySelectorAll("button.retroEdgeMode").forEach(function(button){button.addEventListener("click",async function(e){e.preventDefault();e.stopPropagation();try{await rerollSuperheroesDie(message.id,Number(e.currentTarget.dataset.index),e.currentTarget.dataset.retroAction);}catch(err){console.error("Супергерои | переброс",err);ui.notifications.error("Не удалось перебросить выбранную кость: "+err.message);}});});if(message.flags?.superheroes?.kind==="attack"&&!root.querySelector("button.superheroes-damage")){const b=document.createElement("button");b.type="button";b.className="superheroes-damage";b.textContent="Урон";root.querySelector(".dice-total")?.after(b);}const damage=root.querySelector("button.superheroes-damage");if(damage)damage.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();rollDamageFromMessage(message.id);});});
