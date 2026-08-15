@@ -1,0 +1,32 @@
+{{#if parts.length}}
+<div class="superheroes-tooltip">
+  {{#each parts}}
+    <section class="tooltip-part">
+      <div class="dice">
+        
+        <!-- КОНТЕЙНЕР КУБИКОВ (В ТУЛТИПЕ) -->
+        <ol class="dice-rolls superheroes-dice-tooltip-row" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; list-style: none !important; margin: 0 0 8px 0 !important; padding: 0 !important;">
+          {{#each rolls}}
+            <li class="roll {{ classes }}" style="flex: 0 0 40px !important; display: grid !important; place-items: center !important; width: 40px !important; height: 40px !important; margin: 0 !important;">
+              {{#if @root.isPrivate}}?{{ else }}{{ result }}{{/if}}
+            </li>
+          {{/each}}
+        </ol>
+
+        {{#if (eq rolls.length 3)}}
+        <!-- КОНТЕЙНЕР КНОПОК (В ТУЛТИПЕ) -->
+        <div class="superheroes-reroll-grid" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; margin-bottom: 8px !important;">
+          {{#each rolls}}
+            <div class="superheroes-reroll-cell" style="flex: 0 0 40px !important; display: flex !important; flex-direction: column !important; gap: 3px !important; margin: 0 !important;">
+              <button type="button" class="retroEdgeMode" data-retro-action="edge" data-index="{{@index}}" style="width: 100% !important; padding: 2px !important; font-size: 8px !important;">Преимущество</button>
+              <button type="button" class="retroEdgeMode" data-retro-action="trouble" data-index="{{@index}}" style="width: 100% !important; padding: 2px !important; font-size: 8px !important;">Помеха</button>
+            </div>
+          {{/each}}
+        </div>
+        {{/if}}
+
+      </div>
+    </section>
+  {{/each}}
+</div>
+{{/if}}

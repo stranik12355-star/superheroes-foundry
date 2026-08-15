@@ -1,0 +1,31 @@
+<div class="sh-chat-card {{#if critical}}critical{{/if}}">
+ <div class="chat-title">{{label}}</div>
+ {{#if (eq kind "check")}}
+ 
+ <!-- КОНТЕЙНЕР КУБИКОВ -->
+ <div class="dice-line" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; margin: 10px 0 !important;">
+  {{#each dice as |die i|}}
+    <!-- САМ КУБИК -->
+    <div class="roll-die {{#if (eq i 1)}}middle{{/if}} {{#if (and (eq i 1) ../critical)}}critical-die{{/if}}" style="flex: 0 0 40px !important; display: grid !important; place-items: center !important; width: 40px !important; height: 40px !important; margin: 0 !important;">
+      {{#if (and (eq i 1) ../critical)}}★{{else}}{{die}}{{/if}}
+    </div>
+  {{/each}}
+ </div>
+ 
+ <!-- КОНТЕЙНЕР КНОПОК ПОД КУБАМИ -->
+ <div class="reroll-row" style="display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 8px !important; margin-top: 6px !important;">
+  {{#each dice as |die i|}}
+    <!-- КОЛОНКА КНОПОК (Преимущество / Помеха) -->
+    <div class="reroll-cell" style="flex: 0 0 40px !important; display: flex !important; flex-direction: column !important; gap: 3px !important; margin: 0 !important;">
+      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="advantage" style="width: 100% !important; padding: 2px !important; font-size: 8px !important;">Преимущество</button>
+      <button type="button" data-action="reroll-die" data-message-id="{{../_id}}" data-die="{{i}}" data-mode="disadvantage" style="width: 100% !important; padding: 2px !important; font-size: 8px !important;">Помеха</button>
+    </div>
+  {{/each}}
+ </div>
+ 
+ {{else}}
+ <div class="attack-roll"><span>(1d6 × {{multiplier}}) + {{modifier}}</span><strong>{{total}}</strong></div>
+ {{/if}}
+ <div class="chat-total"><span>Результат</span><strong>{{total}}</strong></div>
+ {{#if critical}}<div class="critical-note">★ КРИТИЧЕСКИЙ РЕЗУЛЬТАТ — ЦЕНТРАЛЬНАЯ КОСТЬ СЧИТАЕТСЯ КАК 6</div>{{/if}}
+</div>
