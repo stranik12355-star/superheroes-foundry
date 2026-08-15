@@ -690,3 +690,59 @@
     -webkit-appearance: none;
     margin: 0;
 }
+/* ===== СОРТИРОВКА (DRAG & DROP) ===== */
+.item-drag-handle {
+    cursor: grab;
+    color: #44454c;
+    font-size: 14px;
+    padding-right: 6px;
+    user-select: none;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+}
+.item-drag-handle:hover {
+    color: #b7323c;
+}
+.item-drag-handle:active {
+    cursor: grabbing;
+}
+.list-view-item.drag-over-top {
+    border-top: 2px solid #ff3333 !important;
+}
+.list-view-item.drag-over-bottom {
+    border-bottom: 2px solid #ff3333 !important;
+}
+
+/* ===== КОМПАКТНОЕ ПОЛЕ ВРЕМЕННОГО ФОКУСА ===== */
+.temp-focus-badge {
+    background: #2b003b !important;
+    border: 1px solid #cc00ff !important;
+    color: #f2ccff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 4px !important;
+}
+.temp-focus-input {
+    width: 28px !important; /* Узкое, под 3 цифры */
+    background: #0d0014 !important;
+    border: 1px solid #ff33ff !important;
+    color: #ffffff !important; /* Белый цвет цифр */
+    border-radius: 2px;
+    font-size: 13px !important; /* Крупные цифры */
+    font-weight: 900 !important;
+    text-align: center;
+    padding: 0 !important;
+    height: 16px !important;
+    outline: none;
+}
+.temp-focus-input:focus {
+    border-color: #fff !important;
+    box-shadow: 0 0 5px #cc00ff;
+}
+.temp-focus-input::-webkit-outer-spin-button,
+.temp-focus-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
