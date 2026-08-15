@@ -1,8 +1,8 @@
 /* СУПЕРГЕРОИ — Foundry VTT 12 */
 const SH_DEFAULTS = {
   rank: 1, karma: 1,
-  health: { value: 10, bonus: 0 },
-  focus: { value: 10, bonus: 0 },
+  health: { value: 10, bonus: 0, max: 10 }, // Добавлено max для токенов
+  focus: { value: 10, bonus: 0, max: 10 },  // Добавлено max для токенов
   initiative: { bonus: 0 },
   speed: { running: 0, climbing: 0, swimming: 0, jumping: 0, flying: 0 },
   biography: { name:"", nickname:"", age:"", gender:"", height:"", weight:"", eyes:"", hair:"", history:"", notes:"" },
@@ -49,7 +49,6 @@ function statDerived(actor,key){
   const ncMod = (s.value + s.nonCombat) - 10;
   const hitMod = mod + s.hit;
 
-  // Проверяем, есть ли активная особенность "Берсерк"
   let berserkDefMod = 0;
   const traits = actor.system?.traits || [];
   const isBerserk = traits.find(t => t.name === "Берсерк" && t.active);
@@ -61,7 +60,7 @@ function statDerived(actor,key){
   return {
     value: s.value,
     mod: mod,
-    defense: s.value + s.defense + berserkDefMod, // Применяем модификатор защиты
+    defense: s.value + s.defense + berserkDefMod,
     nonCombat: s.value + s.nonCombat,
     nonCombatLabel: ncMod > 0 ? "+" + ncMod : ncMod,
     hit: hitMod,
@@ -333,13 +332,12 @@ class SuperheroesActorSheet extends ActorSheet {
           else return ui.notifications.warn("Библиотека особенностей не найдена!");
         }
 
-        // === ПЕРЕКЛЮЧАТЕЛЬ АКТИВНОСТИ БЕРСЕРКА ===
         if(a==="toggle-trait-active"){
           const type = el.dataset.type;
           const index = Number(el.dataset.index);
           const arr = clone(this.actor.system[type] || []);
           if(arr[index]) {
-            arr[index].active = !arr[index].active; // Меняем вкл на выкл и наоборот
+            arr[index].active = !arr[index].active;
             return this.actor.update({[`system.${type}`]: arr});
           }
         }
@@ -389,7 +387,7 @@ class SuperheroesActorSheet extends ActorSheet {
       arr.push({ 
         name: item.name, 
         description: item.system?.description || "",
-        active: false // По умолчанию выключено
+        active: false
       });
       await this.actor.update({ "system.traits": arr }, { render: false });
       this.render(false);
@@ -406,7 +404,17 @@ class SuperheroesActorSheet extends ActorSheet {
   async _sleep(){const s=mergeDefaults(this.actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);await this.actor.update({"system.karma":s.rank,"system.health.value":hp,"system.focus.value":focus});}
   async _editStat(key){const s=mergeDefaults(this.actor.system).stats[key];showDialog('<div class="sh-dialog"><label>Изменение характеристики (от 10)</label><input id="value" type="number" value="'+(s.value-10)+'"><label>Изменение защиты</label><input id="defense" type="number" value="'+s.defense+'"><label>Изменение вне боя</label><input id="nonCombat" type="number" value="'+s.nonCombat+'"><label>Изменение попадания</label><input id="hit" type="number" value="'+s.hit+'"><label>Изменение множителя урона</label><input id="multiplier" type="number" value="'+s.multiplier+'"><label>Изменение стабильного урона</label><input id="stable" type="number" value="'+s.stable+'"></div>',"Настройки — "+game.i18n.localize("SUPERHEROES.Stat."+key),async h=>{const p="system.stats."+key+".";await this.actor.update({[p+"value"]:10+(Number(h.find("#value").val())||0),[p+"defense"]:Number(h.find("#defense").val())||0,[p+"nonCombat"]:Number(h.find("#nonCombat").val())||0,[p+"hit"]:Number(h.find("#hit").val())||0,[p+"multiplier"]:Number(h.find("#multiplier").val())||0,[p+"stable"]:Number(h.find("#stable").val())||0});});}
   async _editBiography(){const root=this.element?.[0]||this.element;const editing=root?.classList.toggle("biography-editing");root?.querySelectorAll("[data-bio-field]").forEach(function(el){el.readOnly=!editing;el.classList.toggle("editable",!!editing);});const button=root?.querySelector("[data-action='edit-bio']");if(button)button.title=editing?"Завершить редактирование":"Редактировать биографию";if(editing)root?.querySelector("[data-bio-field='nickname']")?.focus();}
-  async _editToken(){try{const token=this.actor.prototypeToken;if(typeof TokenConfig==="function")new TokenConfig(token).render(true);else if(foundry?.applications?.sheets?.TokenConfig)new foundry.applications.sheets.TokenConfig({document:token}).render(true);else ui.notifications.warn("Окно настройки токена недоступно в этой версии Foundry.");}catch(err){console.error(err);ui.notifications.error("Не удалось открыть настройки токена.");}}
+  
+  /* === НОВАЯ ИСПРАВЛЕННАЯ ФУНКЦИЯ ДЛЯ КНОПКИ ТОКЕНА === */
+  async _editToken(){
+    try {
+      this.actor.prototypeToken.sheet.render(true);
+    } catch(err) {
+      console.error("Супергерои | Ошибка открытия токена:", err);
+      ui.notifications.error("Не удалось открыть настройки токена.");
+    }
+  }
+
   _listLabel(type){return type==="powers"?"способность":type==="traits"?"особенность":"снаряжение";}
   
   async _toggleEdit(type){
@@ -512,8 +520,26 @@ Hooks.once("ready",function(){if(game.dice3d)registerDiceSoNice(game.dice3d);});
 Hooks.once("diceSoNiceReady",function(dice3d){registerDiceSoNice(dice3d);});
 function registerDiceSoNice(dice3d){try{dice3d.addDicePreset({type:"s",labels:["★","2","3","4","5","6"],colorset:"red",system:"standard"});dice3d.addDicePreset({type:"d6",labels:["1","2","3","4","5","6"],colorset:"white",system:"standard"});}catch(err){console.warn("Супергерои | Dice So Nice",err);}}
 Hooks.once("ready",function(){for(const actor of game.actors.contents){const s=mergeDefaults(actor.system),hp=resourceMax(s.stats.endurance.value,s.health.bonus),focus=resourceMax(s.stats.vigilance.value,s.focus.bonus);if(actor.system?.health?.value>hp)actor.update({"system.health.value":hp},{render:false});if(actor.system?.focus?.value>focus)actor.update({"system.focus.value":focus},{render:false});}});
-Hooks.on("preCreateActor",function(actor){actor.updateSource({system:mergeDefaults(actor.system)});});
 
+/* === НАСТРОЙКА ТОКЕНА ПРИ СОЗДАНИИ НОВОГО ПЕРСОНАЖА === */
+Hooks.on("preCreateActor", function(actor) {
+  const s = mergeDefaults(actor.system);
+  s.health.max = resourceMax(s.stats.endurance.value, s.health.bonus);
+  s.focus.max = resourceMax(s.stats.vigilance.value, s.focus.bonus);
+
+  actor.updateSource({
+    system: s,
+    prototypeToken: {
+      actorLink: true,                            // Связываем ХП токена и листа
+      displayName: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Имя всегда отображается (или можно 20 для HOVER)
+      displayBars: CONST.TOKEN_DISPLAY_MODES.ALWAYS, // Полоски всегда отображаются
+      bar1: { attribute: "health" },              // Верхняя полоса (Зеленая) = Здоровье
+      bar2: { attribute: "focus" }                // Нижняя полоса (Синяя) = Фокус
+    }
+  });
+});
+
+/* === СОХРАНЕНИЕ MAX-ЗНАЧЕНИЙ ПРИ ОБНОВЛЕНИИ === */
 Hooks.on("preUpdateActor", function(actor, changes) {
   const expandedChanges = foundry.utils.expandObject(changes);
   const merged = foundry.utils.mergeObject(clone(actor.system), expandedChanges.system || {}, {inplace: false, recursive: true});
@@ -521,6 +547,10 @@ Hooks.on("preUpdateActor", function(actor, changes) {
   
   const hp = resourceMax(s.stats.endurance.value, s.health.bonus);
   const focus = resourceMax(s.stats.vigilance.value, s.focus.bonus);
+
+  // Важно: записываем max в базу, чтобы полоски токена могли их читать!
+  foundry.utils.setProperty(changes, "system.health.max", hp);
+  foundry.utils.setProperty(changes, "system.focus.max", focus);
   
   if(s.health.value > hp) foundry.utils.setProperty(changes, "system.health.value", hp);
   if(s.focus.value > focus) foundry.utils.setProperty(changes, "system.focus.value", focus);
