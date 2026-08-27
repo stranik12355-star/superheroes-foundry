@@ -86,7 +86,7 @@
        <div class="sh-list-editor-folder">
          <div class="sh-list-editor-folder-head">
            <input type="color" class="folder-color-picker" data-edit-field="color" data-type="gearFolders" data-id="{{f.id}}" value="{{f.color}}">
-           <input class="sh-list-editor-name" type="text" data-edit-field="name" data-type="gearFolders" data-id="{{f.id}}" value="{{f.name}}" placeholder="Название папки" style="flex: 1;">
+           <input class="sh-list-editor-name" type="text" data-edit-field="name" data-type="gearFolders" data-id="{{f.id}}" value="{{f.name}}" placeholder="Название папки">
            <button type="button" class="sh-list-editor-remove" data-action="delete-folder" data-id="{{f.id}}" title="Удалить папку">×</button>
          </div>
        </div>
@@ -105,7 +105,7 @@
             <span>ПРЕДМЕТ {{#if item.folderId}}(В ПАПКЕ){{else}}(В КОРНЕ){{/if}}</span>
           </div>
           <span class="sh-list-editor-row-tools">
-            <select data-edit-field="folderId" data-type="gear" data-id="{{item.id}}" style="background: #111; color: #fff; border: 1px solid #444; font-size: 9px; max-width: 80px;">
+            <select data-edit-field="folderId" data-type="gear" data-id="{{item.id}}" style="background: #111; color: #fff; border: 1px solid #444; font-size: 9px; max-width: 80px;" {{#if item.locked}}disabled{{/if}}>
               <option value="">-- Корень --</option>
               {{#each ../system.gearFolders as |f|}}
               <option value="{{f.id}}" {{#if (eq f.id item.folderId)}}selected{{/if}}>{{f.name}}</option>
@@ -117,25 +117,25 @@
         </div>
         
         <label>НАЗВАНИЕ</label>
-        <input class="sh-list-editor-name" data-edit-field="name" data-type="gear" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название предмета">
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="gear" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название предмета" {{#if item.locked}}disabled{{/if}}>
         
         <div class="sh-list-editor-grid" style="grid-template-columns: 1fr 1fr 1fr;">
           <div>
             <label>КОЛ-ВО</label>
-            <input class="sh-list-editor-extra" data-edit-field="quantity" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.quantity}}" min="1">
+            <input class="sh-list-editor-extra" data-edit-field="quantity" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.quantity}}" min="1" {{#if item.locked}}disabled{{/if}}>
           </div>
           <div>
             <label>ВЕС</label>
-            <input class="sh-list-editor-extra" data-edit-field="weight" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.weight}}" min="0">
+            <input class="sh-list-editor-extra" data-edit-field="weight" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.weight}}" min="0" {{#if item.locked}}disabled{{/if}}>
           </div>
           <div>
             <label>МАКС. ХП</label>
-            <input class="sh-list-editor-extra" data-edit-field="hp.max" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.hp.max}}" min="0">
+            <input class="sh-list-editor-extra" data-edit-field="hp.max" data-type="gear" data-id="{{item.id}}" type="number" value="{{item.hp.max}}" min="0" {{#if item.locked}}disabled{{/if}}>
           </div>
         </div>
 
         <label>ОПИСАНИЕ</label>
-        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="gear" data-id="{{item.id}}" placeholder="Описание">{{item.description}}</textarea>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="gear" data-id="{{item.id}}" placeholder="Описание" {{#if item.locked}}disabled{{/if}}>{{item.description}}</textarea>
        </div>
       {{else}}
         <div class="sh-list-editor-empty empty">Пока нет снаряжения.</div>
@@ -169,17 +169,17 @@
              <div class="item-head">
               <div class="item-drag-handle" title="Потяните для сортировки">☰</div>
               <button type="button" class="item-title" data-action="send-item" data-type="gear" data-id="{{item.id}}">{{item.name}}</button>
+              
+              {{!-- ПЛАШКИ СПРАВА ОТ НАЗВАНИЯ --}}
+              {{#if item.quantity}}<span class="power-badge" style="background:#1e1e24; border:1px solid #3d3d46; color:#aaa;">КОЛ: {{item.quantity}}</span>{{/if}}
+              {{#if item.weight}}<span class="power-badge" style="background:#1e1e24; border:1px solid #3d3d46; color:#aaa;">ВЕС: {{item.weight}}</span>{{/if}}
+              {{#if item.hp.max}}
+                <span class="power-badge temp-focus-badge" style="background:#2a1518 !important; border:1px solid #8d2b33 !important; color:#e8898f !important;">
+                  ХП: <input type="number" class="gear-hp-input" data-action="update-gear-hp" data-id="{{item.id}}" value="{{item.hp.value}}" min="0" max="{{item.hp.max}}"> / {{item.hp.max}}
+                </span>
+              {{/if}}
+
               <span class="item-actions"><button type="button" class="arrow" data-action="toggle-description" title="Открыть/свернуть описание">⌄</button></span>
-             </div>
-             
-             <div class="gear-stats-row">
-               {{#if item.quantity}}<div class="gear-stat-badge">КОЛ: {{item.quantity}}</div>{{/if}}
-               {{#if item.weight}}<div class="gear-stat-badge">ВЕС: {{item.weight}}</div>{{/if}}
-               {{#if item.hp.max}}
-                 <div class="gear-stat-badge hp-badge">
-                   ХП: <input type="number" data-action="update-gear-hp" data-id="{{item.id}}" value="{{item.hp.value}}" min="0" max="{{item.hp.max}}"> / {{item.hp.max}}
-                 </div>
-               {{/if}}
              </div>
 
              <div class="item-details"><p>{{item.description}}</p></div>
@@ -198,17 +198,17 @@
          <div class="item-head">
           <div class="item-drag-handle" title="Потяните для сортировки">☰</div>
           <button type="button" class="item-title" data-action="send-item" data-type="gear" data-id="{{item.id}}">{{item.name}}</button>
+          
+          {{!-- ПЛАШКИ СПРАВА ОТ НАЗВАНИЯ --}}
+          {{#if item.quantity}}<span class="power-badge" style="background:#1e1e24; border:1px solid #3d3d46; color:#aaa;">КОЛ: {{item.quantity}}</span>{{/if}}
+          {{#if item.weight}}<span class="power-badge" style="background:#1e1e24; border:1px solid #3d3d46; color:#aaa;">ВЕС: {{item.weight}}</span>{{/if}}
+          {{#if item.hp.max}}
+            <span class="power-badge temp-focus-badge" style="background:#2a1518 !important; border:1px solid #8d2b33 !important; color:#e8898f !important;">
+              ХП: <input type="number" class="gear-hp-input" data-action="update-gear-hp" data-id="{{item.id}}" value="{{item.hp.value}}" min="0" max="{{item.hp.max}}"> / {{item.hp.max}}
+            </span>
+          {{/if}}
+
           <span class="item-actions"><button type="button" class="arrow" data-action="toggle-description" title="Открыть/свернуть описание">⌄</button></span>
-         </div>
-         
-         <div class="gear-stats-row">
-           {{#if item.quantity}}<div class="gear-stat-badge">КОЛ: {{item.quantity}}</div>{{/if}}
-           {{#if item.weight}}<div class="gear-stat-badge">ВЕС: {{item.weight}}</div>{{/if}}
-           {{#if item.hp.max}}
-             <div class="gear-stat-badge hp-badge">
-               ХП: <input type="number" data-action="update-gear-hp" data-id="{{item.id}}" value="{{item.hp.value}}" min="0" max="{{item.hp.max}}"> / {{item.hp.max}}
-             </div>
-           {{/if}}
          </div>
 
          <div class="item-details"><p>{{item.description}}</p></div>
@@ -253,24 +253,24 @@
         </div>
         
         <label>НАЗВАНИЕ</label>
-        <input class="sh-list-editor-name" data-edit-field="name" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название">
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название" {{#if item.locked}}disabled{{/if}}>
         
         <div class="sh-list-editor-grid">
           <div>
             <label>ТРЕБОВАНИЯ</label>
-            <input class="sh-list-editor-extra" data-edit-field="requirements" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.requirements}}" placeholder="Например: Ранг 2">
+            <input class="sh-list-editor-extra" data-edit-field="requirements" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.requirements}}" placeholder="Например: Ранг 2" {{#if item.locked}}disabled{{/if}}>
           </div>
           <div>
             <label>ДЕЙСТВИЕ</label>
-            <input class="sh-list-editor-extra" data-edit-field="action" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.action}}" placeholder="Например: Стандартное">
+            <input class="sh-list-editor-extra" data-edit-field="action" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.action}}" placeholder="Например: Стандартное" {{#if item.locked}}disabled{{/if}}>
           </div>
           <div>
             <label>ВЫЗВАНО (ТРИГГЕР)</label>
-            <input class="sh-list-editor-extra" data-edit-field="trigger" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.trigger}}" placeholder="Условие реакции...">
+            <input class="sh-list-editor-extra" data-edit-field="trigger" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.trigger}}" placeholder="Условие реакции..." {{#if item.locked}}disabled{{/if}}>
           </div>
           <div>
             <label>ПРОДОЛЖИТЕЛЬНОСТЬ</label>
-            <input class="sh-list-editor-extra" data-edit-field="duration" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.duration}}" placeholder="Например: Мгновенная">
+            <input class="sh-list-editor-extra" data-edit-field="duration" data-type="powers" data-id="{{item.id}}" type="text" value="{{item.duration}}" placeholder="Например: Мгновенная" {{#if item.locked}}disabled{{/if}}>
           </div>
         </div>
 
@@ -288,7 +288,7 @@
         </div>
 
         <label>ЭФФЕКТ (ОПИСАНИЕ)</label>
-        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="powers" data-id="{{item.id}}" placeholder="Описание эффекта">{{item.description}}</textarea>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="powers" data-id="{{item.id}}" placeholder="Описание эффекта" {{#if item.locked}}disabled{{/if}}>{{item.description}}</textarea>
        </div>
       {{else}}<div class="sh-list-editor-empty empty">Пока нет способностей.</div>{{/each}}
      </div>
@@ -358,9 +358,9 @@
           </span>
         </div>
         <label>НАЗВАНИЕ</label>
-        <input class="sh-list-editor-name" data-edit-field="name" data-type="traits" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название">
+        <input class="sh-list-editor-name" data-edit-field="name" data-type="traits" data-id="{{item.id}}" type="text" value="{{item.name}}" placeholder="Название" {{#if item.locked}}disabled{{/if}}>
         <label>ОПИСАНИЕ</label>
-        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="traits" data-id="{{item.id}}" placeholder="Описание">{{item.description}}</textarea>
+        <textarea class="sh-list-editor-description" data-edit-field="description" data-type="traits" data-id="{{item.id}}" placeholder="Описание" {{#if item.locked}}disabled{{/if}}>{{item.description}}</textarea>
        </div>
       {{else}}<div class="sh-list-editor-empty empty">Пока нет особенностей.</div>{{/each}}
      </div>
