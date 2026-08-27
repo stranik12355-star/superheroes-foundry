@@ -913,3 +913,45 @@
     gap: 8px;
     margin-top: 8px;
 }
+/* ===== ИСПРАВЛЕНИЯ СНАРЯЖЕНИЯ ===== */
+/* Фикс размера кнопки удаления в папке */
+.sh-list-editor-folder-head .sh-list-editor-remove {
+    width: 27px !important;
+    height: 27px !important;
+    flex: 0 0 27px !important;
+    padding: 0 !important;
+}
+.sh-list-editor-folder-head .sh-list-editor-name {
+    flex: 1 1 auto !important;
+    width: 100% !important;
+}
+
+/* Блокировка новых полей в снаряжении */
+.sh-list-editor-row.locked .sh-list-editor-extra,
+.sh-list-editor-row.locked select {
+    pointer-events: none !important;
+    user-select: none !important;
+    background: #26262b !important;
+    color: #aaa !important;
+    border-color: #3a3a41 !important;
+}
+
+/* Стиль ХП инпута в режиме просмотра (в строке названия) */
+.gear-hp-input {
+    width: 22px !important;
+    height: 14px !important;
+    background: #111 !important;
+    border: 1px solid #8d2b33 !important;
+    color: #fff !important;
+    border-radius: 2px;
+    font-size: 10px !important;
+    font-weight: bold;
+    text-align: center;
+    padding: 0 !important;
+    outline: none;
+}
+.gear-hp-input::-webkit-outer-spin-button,
+.gear-hp-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
