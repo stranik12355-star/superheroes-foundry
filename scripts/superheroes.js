@@ -177,26 +177,26 @@ async function make3d6Roll(actor,formula,flavor,flags={}){
 
   // ИНИЦИАТИВА: Добавляем в бой, если нет, и ставим значение
   if (flags.kind === "initiative" && game.combat) {
-    let combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+    let tokenDoc = actor.isToken ? actor.token : actor.getActiveTokens()[0]?.document;
+    let combatant = null;
     
-    if (!combatant) {
-      // Ищем токен на карте и используем нативную функцию добавления в комбат
-      const tokens = actor.getActiveTokens();
-      if (tokens.length > 0) {
-        await tokens[0].document.toggleCombat();
-        combatant = game.combat.combatants.find(c => c.actorId === actor.id);
-      } else {
-        // Если токена на карте нет, создаем участника боя вручную
+    // Если токен есть на карте
+    if (tokenDoc) {
+      if (!tokenDoc.inCombat) await tokenDoc.toggleCombat();
+      combatant = game.combat.combatants.find(c => c.tokenId === tokenDoc.id);
+    } else {
+      // Если токена нет на карте (например, бросок из закрытого листа)
+      combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+      if (!combatant) {
         const created = await game.combat.createEmbeddedDocuments("Combatant", [{
           actorId: actor.id,
-          sceneId: canvas.scene?.id,
           initiative: roll.total
         }]);
         combatant = created[0];
       }
     }
-    
-    // Обновляем значение инициативы
+
+    // Применяем результат инициативы в комбат-трекер
     if (combatant) {
       await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
     }
@@ -280,7 +280,8 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   const flags = chatMessage.flags?.superheroes || {};
   if (flags.kind === "initiative" && game.combat) {
     const actorId = chatMessage.speaker.actor;
-    const combatant = game.combat.combatants.find(c => c.actorId === actorId);
+    const tokenId = chatMessage.speaker.token;
+    let combatant = game.combat.combatants.find(c => (tokenId && c.tokenId === tokenId) || c.actorId === actorId);
     if (combatant) {
       await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
     }
@@ -987,34 +988,29 @@ window.SuperheroesSystem={SuperheroesDie,SuperheroesRoll,createCheckRoll,createN
 // ==========================================
 
 Hooks.on("getSceneControlButtons", (controls) => {
+  if (!game.user.isGM) return;
   const tokenControls = controls.find(c => c.name === "token");
-  if (tokenControls && game.user.isGM) {
+  if (tokenControls) {
     tokenControls.tools.push({
       name: "fast-combat",
       title: "Быстрое добавление в бой (Клик по токену)",
       icon: "fas fa-bolt", 
       toggle: true,
       active: false,
-      onClick: (toggled) => {
-        game.settings.set("core", "fastCombatActive", toggled);
-      }
+      onClick: () => {} // Статус "нажата/отжата" хранится в UI самого Foundry автоматически
     });
   }
 });
 
-Hooks.once("ready", () => {
-  game.settings.register("core", "fastCombatActive", {
-    name: "Fast Combat Mode",
-    scope: "client",
-    config: false,
-    type: Boolean,
-    default: false
-  });
-});
-
 Hooks.on("controlToken", async (token, controlled) => {
-  if (controlled && game.settings.get("core", "fastCombatActive") && game.combat) {
-    // Безопасное добавление или удаление токена из боя
+  if (!game.user.isGM || !game.combat) return;
+  
+  // Проверяем, нажата ли наша кнопка в боковом меню
+  const tool = ui.controls.controls.find(c => c.name === "token")?.tools.find(t => t.name === "fast-combat");
+  
+  // Если кнопка нажата и мы ВЫДЕЛИЛИ токен (а не сняли выделение)
+  if (tool && tool.active && controlled) {
+    // Надежное добавление в комбат-трекер V12
     await token.document.toggleCombat();
   }
 });
