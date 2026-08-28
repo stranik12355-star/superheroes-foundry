@@ -175,21 +175,20 @@ async function make3d6Roll(actor,formula,flavor,flags={}){
     flags: { superheroes: { ...flags, threeD6: true } }
   });
 
-  // Если это инициатива, обновляем трекер сразу или добавляем токен в бой
+  // ИНИЦИАТИВА: Добавляем в бой, если нет, и ставим значение
   if (flags.kind === "initiative" && game.combat) {
-    const tokenId = actor.isToken ? actor.token.id : actor.getActiveTokens()[0]?.id;
-    let combatant = game.combat.combatants.find(c => (tokenId && c.tokenId === tokenId) || c.actorId === actor.id);
-    
-    if (combatant) {
-      // Обновляем существующего
-      await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
-    } else if (tokenId) {
-      // Добавляем нового в бой
+    let combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+    if (!combatant) {
+      const activeTokens = actor.getActiveTokens();
+      const tokenId = activeTokens.length > 0 ? activeTokens[0].id : null;
       await game.combat.createEmbeddedDocuments("Combatant", [{
-        tokenId: tokenId,
         actorId: actor.id,
+        tokenId: tokenId,
+        sceneId: canvas.scene?.id,
         initiative: roll.total
       }]);
+    } else {
+      await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
     }
   }
   
@@ -271,8 +270,7 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   const flags = chatMessage.flags?.superheroes || {};
   if (flags.kind === "initiative" && game.combat) {
     const actorId = chatMessage.speaker.actor;
-    const tokenId = chatMessage.speaker.token;
-    const combatant = game.combat.combatants.find(c => (tokenId && c.tokenId === tokenId) || c.actorId === actorId);
+    const combatant = game.combat.combatants.find(c => c.actorId === actorId);
     if (combatant) {
       await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
     }
@@ -984,28 +982,31 @@ Hooks.on("getSceneControlButtons", (controls) => {
     tokenControls.tools.push({
       name: "fast-combat",
       title: "Быстрое добавление в бой (Клик по токену)",
-      icon: "fas fa-swords",
+      icon: "fas fa-bolt", // Безопасная иконка, которая точно есть в системе
       toggle: true,
       active: false,
       onClick: (toggled) => {
-        // Состояние кнопки хранится внутри UI, доп. сохранение не требуется
+        game.settings.set("core", "fastCombatActive", toggled);
       }
     });
   }
 });
 
-// Перехват клика по токену на карте
-Hooks.on("controlToken", async (token, controlled) => {
-  const isFastCombatActive = ui.controls.controls
-    .find(c => c.name === "token")?.tools
-    .find(t => t.name === "fast-combat")?.active;
-
-  if (controlled && isFastCombatActive && game.combat) {
-    await token.toggleCombat();
-    // Foundry автоматически выдаст сообщение в UI о добавлении/удалении
-  }
+Hooks.once("ready", () => {
+  game.settings.register("core", "fastCombatActive", {
+    name: "Fast Combat Mode",
+    scope: "client",
+    config: false,
+    type: Boolean,
+    default: false
+  });
 });
 
+Hooks.on("controlToken", async (token, controlled) => {
+  if (controlled && game.settings.get("core", "fastCombatActive") && game.combat) {
+    await token.toggleCombat();
+  }
+});
 
 /* --- АВТОЗАПОЛНЕНИЕ БИБЛИОТЕК --- */
 Hooks.once("ready", async function() {
