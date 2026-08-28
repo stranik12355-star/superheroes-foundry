@@ -1,0 +1,12 @@
+{
+  "Actor": {
+    "types": ["character"],
+    "character": {}
+  },
+  "Item": {
+    "types": ["power", "trait", "gear"],
+    "power": {},
+    "trait": {},
+    "gear": {}
+  }
+}
