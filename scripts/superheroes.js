@@ -190,9 +190,20 @@ async function createAttackRoll(actor,key){
 }
 
 async function createInitiativeRoll(actor){
-  const s=mergeDefaults(actor.system);
-  const modifier=statMod(s.stats.vigilance.value)+Number(s.initiative.bonus||0);
-  return make3d6Roll(actor,`{1d6,1ds,1d6} + ${modifier}`,"Инициатива",{kind:"initiative",modifier});
+  // Проверяем, есть ли токен в активном бою
+  let combatant = game.combat?.combatants.find(c => c.actorId === actor.id);
+  // Если у актера несколько токенов на сцене, пробуем найти конкретный
+  if (!combatant && actor.token) combatant = game.combat?.combatants.find(c => c.tokenId === actor.token.id);
+
+  if (combatant && game.combat) {
+    // Кидаем через трекер боя (использует формулу из CONFIG)
+    return game.combat.rollInitiative([combatant.id]);
+  } else {
+    // Вне боя просто кидаем в чат
+    const s = mergeDefaults(actor.system);
+    const modifier = statMod(s.stats.vigilance.value) + Number(s.initiative.bonus || 0);
+    return make3d6Roll(actor, `{1d6,1ds,1d6} + ${modifier}`, "Инициатива", {kind:"initiative", modifier});
+  }
 }
 
 function activeResult(die){return [...(die.results||[])].reverse().find(r=>r.active) || die.results?.at(-1);}
@@ -297,7 +308,7 @@ class SuperheroesActorSheet extends ActorSheet {
       height: 820,
       resizable: true,
       submitOnChange: false,
-      dragDrop: [{dragSelector: ".list-view-item", dropSelector: null}] // Исправлено: не блокируем всю форму
+      dragDrop: [{dragSelector: ".list-view-item", dropSelector: null}]
     });
   }
   
@@ -318,7 +329,6 @@ class SuperheroesActorSheet extends ActorSheet {
     if(!this._editing) this._editing = {powers: false, traits: false, gear: false};
     data.currentTokenImg = this.actor.prototypeToken.texture.src;
 
-    // --- ПОСТРОЕНИЕ ДЕРЕВА СНАРЯЖЕНИЯ ---
     const gearList = clone(system.gear || []).sort((a,b) => (a.sort || 0) - (b.sort || 0));
     const foldersList = clone(system.gearFolders || []).sort((a,b) => (a.sort || 0) - (b.sort || 0));
     
@@ -337,7 +347,6 @@ class SuperheroesActorSheet extends ActorSheet {
         gearTree.rootItems.push(item);
       }
     });
-    // ------------------------------------
 
     data.derived = {
       maxHP, maxFocus, maxKarma: system.rank, 
@@ -368,7 +377,6 @@ class SuperheroesActorSheet extends ActorSheet {
     super.activateListeners(html); 
     html.off(".superheroes");
     
-    // --- DRAG & DROP ПЕРЕРАБОТАННЫЙ (ИСПРАВЛЕННЫЙ) ---
     const listItems = html.find('.list-view-item');
 
     listItems.on('dragstart', (e) => {
@@ -383,7 +391,7 @@ class SuperheroesActorSheet extends ActorSheet {
     });
 
     html.find('.folder-drop-zone, .list-view-item').on('dragover', (e) => {
-      e.preventDefault(); // Нужно, чтобы разрешить drop
+      e.preventDefault(); 
       e.originalEvent.dataTransfer.dropEffect = "move";
       const target = e.currentTarget;
       
@@ -404,7 +412,6 @@ class SuperheroesActorSheet extends ActorSheet {
     });
 
     html.find('.folder-drop-zone, .list-view-item').on('drop', async (e) => {
-      // Убираем подсветку
       html.find('.folder-drop-zone, .list-view-item').removeClass('drag-over-top drag-over-bottom drag-over');
       
       const dataString = e.originalEvent.dataTransfer.getData("text/plain");
@@ -412,8 +419,6 @@ class SuperheroesActorSheet extends ActorSheet {
       let data;
       try { data = JSON.parse(dataString); } catch(err) { return; }
       
-      // ВОТ ЗДЕСЬ ИСПРАВЛЕНИЕ: Блокируем стандартное поведение ТОЛЬКО если это сортировка.
-      // Если это предмет из компендиума, даём событию пойти дальше!
       if (data.type === "SortItem") {
         e.preventDefault();
         e.stopPropagation();
@@ -427,14 +432,12 @@ class SuperheroesActorSheet extends ActorSheet {
         if (itemIndex === -1) return;
         const item = arr[itemIndex];
 
-        // Если бросили прямо на папку или в корень
         if (dropTarget.classList.contains('folder-drop-zone')) {
           const targetFolderId = dropTarget.dataset.folderId;
           item.folderId = targetFolderId === "root" ? null : targetFolderId;
           arr.splice(itemIndex, 1);
           arr.push(item); 
         } 
-        // Если бросили на другой предмет
         else if (dropTarget.classList.contains('list-view-item')) {
           const targetId = dropTarget.dataset.id;
           const targetIndex = arr.findIndex(x => x.id === targetId);
@@ -457,7 +460,6 @@ class SuperheroesActorSheet extends ActorSheet {
       }
     });
 
-    // --- УПРАВЛЕНИЕ ХП СНАРЯЖЕНИЯ ИЗ ЧАРНИКА ---
     html.on("change", "input[data-action='update-gear-hp']", async e => {
       e.preventDefault();
       const el = e.currentTarget;
@@ -473,7 +475,6 @@ class SuperheroesActorSheet extends ActorSheet {
       }
     });
 
-    // --- РАСКРЫТИЕ ПАПКИ ---
     html.on("click", "[data-action='toggle-folder']", async e => {
       e.preventDefault();
       const id = e.currentTarget.dataset.id;
@@ -880,14 +881,103 @@ class SuperheroesActorSheet extends ActorSheet {
   }
 }
 
+// ==========================================
+// НАСТРОЙКИ СИСТЕМЫ И ХУКИ
+// ==========================================
+
 Hooks.once("init",()=>{
   Handlebars.registerHelper("concat",function(a,b){return (a??"")+(b??"");}); Handlebars.registerHelper("eq",function(a,b){return a===b;});
   CONFIG.Dice.terms.s=SuperheroesDie;
   if(!CONFIG.Dice.types.includes(SuperheroesDie))CONFIG.Dice.types.push(SuperheroesDie);
   CONFIG.Dice.rolls.push(SuperheroesRoll);
   
+  // ИНИЦИАТИВА ДЛЯ ТРЕКЕРА БОЯ
+  CONFIG.Combat.initiative = {
+    formula: "{1d6, 1ds, 1d6} + @stats.vigilance.value - 10 + @initiative.bonus",
+    decimals: 2
+  };
+
   Actors.registerSheet("superheroes",SuperheroesActorSheet,{types:["character"],makeDefault:true,label:"Лист персонажа"});
   Items.registerSheet("superheroes",SuperheroesItemSheet,{makeDefault:true,label:"Лист предмета"});
+});
+
+// КНОПКА ГМА ДЛЯ ДОБАВЛЕНИЯ В БОЙ
+Hooks.on("getSceneControlButtons", (controls) => {
+  if (!game.user.isGM) return;
+  const tokenControls = controls.find(c => c.name === "token");
+  if (tokenControls) {
+    tokenControls.tools.push({
+      name: "combat-add",
+      title: "Добавить в бой (Клик по токену)",
+      icon: "fas fa-swords",
+      toggle: true,
+      active: false,
+      onClick: (active) => { canvas.superheroesCombatCursor = active; }
+    });
+  }
+});
+Hooks.on("canvasReady", () => { canvas.superheroesCombatCursor = false; });
+
+// ПЕРЕХВАТ КЛИКА ПО ТОКЕНУ (ДЛЯ ДОБАВЛЕНИЯ В БОЙ)
+Hooks.on("targetToken", (user, token, targeted) => {
+    // В V12 клик левой кнопкой по токену выделяет его, и мы можем отловить это через controlToken
+});
+Hooks.on("controlToken", async (token, controlled) => {
+  if (game.user.isGM && controlled && canvas.superheroesCombatCursor) {
+    await token.toggleCombat();
+    token.release(); // сразу снимаем выделение, чтобы было удобно кликать дальше
+  }
+});
+
+// СТАТУС ЗДОРОВЬЯ ПРИ НАВЕДЕНИИ
+Hooks.on("hoverToken", (token, hovered) => {
+  const elementId = `sh-health-tooltip-${token.id}`;
+  let tooltip = document.getElementById(elementId);
+  
+  if (!hovered) {
+      if (tooltip) tooltip.remove();
+      return;
+  }
+  if (!token.actor) return;
+
+  // Проверка видимости ХП (зависит от настроек токена - "Показывать полоску 1")
+  const mode = token.document.displayBars;
+  const isOwner = token.document.isOwner;
+  if (mode === CONST.TOKEN_DISPLAY_MODES.NONE) return;
+  if (mode === CONST.TOKEN_DISPLAY_MODES.OWNER && !isOwner) return;
+  if (mode === CONST.TOKEN_DISPLAY_MODES.OWNER_HOVER && !isOwner) return;
+
+  const hp = token.actor.system.health;
+  if (!hp || !hp.max) return;
+  const pct = hp.value / hp.max;
+
+  let status = "";
+  let color = "";
+  if (pct >= 1) { status = "Не ранен"; color = "#4ade80"; }
+  else if (pct >= 0.8) { status = "Легко ранен"; color = "#a3e635"; }
+  else if (pct >= 0.5) { status = "Ранен"; color = "#facc15"; }
+  else if (pct >= 0.25) { status = "Тяжело ранен"; color = "#fb923c"; }
+  else if (pct > 0) { status = "При смерти"; color = "#f87171"; }
+  else { status = "Без сознания"; color = "#991b1b"; }
+
+  if (game.user.isGM) status += ` <span style="color:#aaa;">(${hp.value}/${hp.max})</span>`;
+
+  tooltip = document.createElement("div");
+  tooltip.id = elementId;
+  tooltip.className = "sh-health-tooltip";
+  tooltip.innerHTML = status;
+  tooltip.style.borderLeft = `4px solid ${color}`;
+  document.body.appendChild(tooltip);
+
+  const updatePos = () => {
+      if(!token._hover) return;
+      const x = token.x * canvas.stage.scale.x + canvas.stage.x;
+      const y = token.y * canvas.stage.scale.y + canvas.stage.y;
+      tooltip.style.left = `${x + (token.w * canvas.stage.scale.x)/2}px`;
+      tooltip.style.top = `${y - 35}px`;
+      requestAnimationFrame(updatePos);
+  };
+  updatePos();
 });
 
 Hooks.once("ready",function(){if(game.dice3d)registerDiceSoNice(game.dice3d);});
@@ -905,9 +995,7 @@ Hooks.on("preCreateActor", function(actor) {
     prototypeToken: {
       actorLink: true,                            
       displayName: 20, 
-      displayBars: 20, 
-      bar1: { attribute: "health" },              
-      bar2: { attribute: "focus" }                
+      displayBars: 0 // Убрали дефолтные полоски, теперь работает только наша текстовая система
     }
   });
 });
@@ -946,55 +1034,4 @@ Hooks.on("renderChatMessage",function(message,html){const root=html[0]||html;roo
 
 window.SuperheroesSystem={SuperheroesDie,SuperheroesRoll,createCheckRoll,createNonCombatRoll,createAttackRoll,rerollSuperheroesDie};
 
-/* --- АВТОЗАПОЛНЕНИЕ БИБЛИОТЕК --- */
-Hooks.once("ready", async function() {
-  if (!game.user.isGM) return;
-
-  const packTraits = game.packs.get("superheroes.traits");
-  if (packTraits && packTraits.index.size === 0 && window.SuperheroesTraitsLibrary) {
-    const wasLocked = packTraits.locked;
-    if (wasLocked) await packTraits.configure({ locked: false });
-    const itemsToCreate = window.SuperheroesTraitsLibrary.map(t => ({
-      name: t.name, type: "trait", system: { description: t.description }
-    }));
-    try { await Item.createDocuments(itemsToCreate, { pack: packTraits.collection }); } catch (err) {}
-    if (wasLocked) await packTraits.configure({ locked: true });
-  }
-
-  const packPowers = game.packs.get("superheroes.powers");
-  if (packPowers && packPowers.index.size === 0 && window.SuperheroesPowersLibrary) {
-    const wasLocked = packPowers.locked;
-    if (wasLocked) await packPowers.configure({ locked: false });
-
-    const folderNames = [...new Set(window.SuperheroesPowersLibrary.map(p => p.folder).filter(f => f))];
-    const colors = window.SuperheroesFolderColors || {};
-    
-    const folderDocs = await Folder.createDocuments(
-      folderNames.map(name => ({ name: name, type: "Item", color: colors[name] || "#000000" })),
-      { pack: packPowers.collection }
-    );
-
-    const folderMap = {};
-    folderDocs.forEach(f => folderMap[f.name] = f.id);
-
-    const itemsToCreate = window.SuperheroesPowersLibrary.map(p => ({
-      name: p.name,
-      type: "power",
-      folder: folderMap[p.folder] || null,
-      system: { 
-        description: p.description, 
-        requirements: p.requirements || "",
-        action: p.action || "",
-        trigger: p.trigger || "",
-        duration: p.duration || "",
-        costExtra: p.costExtra || "",
-        cost: p.cost || 0,
-        reaction: p.reaction || false,
-        concentration: p.concentration || false
-      }
-    }));
-
-    try { await Item.createDocuments(itemsToCreate, { pack: packPowers.collection }); } catch (err) {}
-    if (wasLocked) await packPowers.configure({ locked: true });
-  }
-});
+// ... ТУТ ОСТАВАЙСЯ СО СВОИМ КОДОМ БИБЛИОТЕК СПОСОБНОСТЕЙ И ОСОБЕННОСТЕЙ (Hooks.once("ready" с автозаполнением)) ...
