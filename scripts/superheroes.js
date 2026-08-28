@@ -178,16 +178,26 @@ async function make3d6Roll(actor,formula,flavor,flags={}){
   // ИНИЦИАТИВА: Добавляем в бой, если нет, и ставим значение
   if (flags.kind === "initiative" && game.combat) {
     let combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+    
     if (!combatant) {
-      const activeTokens = actor.getActiveTokens();
-      const tokenId = activeTokens.length > 0 ? activeTokens[0].id : null;
-      await game.combat.createEmbeddedDocuments("Combatant", [{
-        actorId: actor.id,
-        tokenId: tokenId,
-        sceneId: canvas.scene?.id,
-        initiative: roll.total
-      }]);
-    } else {
+      // Ищем токен на карте и используем нативную функцию добавления в комбат
+      const tokens = actor.getActiveTokens();
+      if (tokens.length > 0) {
+        await tokens[0].document.toggleCombat();
+        combatant = game.combat.combatants.find(c => c.actorId === actor.id);
+      } else {
+        // Если токена на карте нет, создаем участника боя вручную
+        const created = await game.combat.createEmbeddedDocuments("Combatant", [{
+          actorId: actor.id,
+          sceneId: canvas.scene?.id,
+          initiative: roll.total
+        }]);
+        combatant = created[0];
+      }
+    }
+    
+    // Обновляем значение инициативы
+    if (combatant) {
       await game.combat.updateEmbeddedDocuments("Combatant", [{ _id: combatant.id, initiative: roll.total }]);
     }
   }
@@ -266,7 +276,7 @@ async function rerollSuperheroesDie(messageId,dieIndex,mode){
   await chatMessage.update(merged);
   if(game.dice3d?.showForRoll){try{await game.dice3d.showForRoll(newRoll,game.user,true);}catch(err){console.warn("Супергерои | Dice3D",err);}}
   
-  // СИНХРОНИЗАЦИЯ ИНИЦИАТИВЫ ПРИ ПЕРЕБРОСЕ
+  // ПЕРЕБРОС ИНИЦИАТИВЫ: обновляем трекер
   const flags = chatMessage.flags?.superheroes || {};
   if (flags.kind === "initiative" && game.combat) {
     const actorId = chatMessage.speaker.actor;
@@ -982,7 +992,7 @@ Hooks.on("getSceneControlButtons", (controls) => {
     tokenControls.tools.push({
       name: "fast-combat",
       title: "Быстрое добавление в бой (Клик по токену)",
-      icon: "fas fa-bolt", // Безопасная иконка, которая точно есть в системе
+      icon: "fas fa-bolt", 
       toggle: true,
       active: false,
       onClick: (toggled) => {
@@ -1004,7 +1014,8 @@ Hooks.once("ready", () => {
 
 Hooks.on("controlToken", async (token, controlled) => {
   if (controlled && game.settings.get("core", "fastCombatActive") && game.combat) {
-    await token.toggleCombat();
+    // Безопасное добавление или удаление токена из боя
+    await token.document.toggleCombat();
   }
 });
 
