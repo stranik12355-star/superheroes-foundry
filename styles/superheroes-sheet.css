@@ -991,3 +991,18 @@
 #sh-token-status.status-medium { color: #e37b38; }
 #sh-token-status.status-heavy { color: #d34a53; }
 #sh-token-status.status-dead { color: #666666; }
+* ===== КОМПАКТНОЕ МЕНЮ СЦЕН (ПРАВАЯ ПАНЕЛЬ) ===== */
+#scenes .directory-item.document {
+    padding: 2px !important;
+    align-items: center;
+}
+#scenes .directory-item .thumbnail {
+    width: 40px !important;  /* Уменьшаем картинку в 2 раза */
+    height: 40px !important;
+    flex: 0 0 40px !important;
+}
+#scenes .directory-item .document-name {
+    font-size: 12px !important; /* Делаем текст аккуратнее */
+    line-height: 1.2 !important;
+    margin-left: 5px !important;
+}
