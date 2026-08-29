@@ -17,8 +17,8 @@
   "esmodules": [
     "scripts/traits-library.js",
     "scripts/powers-library.js",
-    "scripts/superheroes.js"
-	"scripts/superheroes-features.js"
+    "scripts/superheroes.js",
+    "scripts/superheroes-features.js"
   ],
   "styles": [
     "styles/superheroes-sheet.css"
