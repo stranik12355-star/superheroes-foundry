@@ -1,0 +1,59 @@
+{
+  "id": "superheroes",
+  "title": "Супергерои",
+  "description": "Самостоятельная система НРИ о супергероях для Foundry Virtual Tabletop. Базовая механика 3d6.",
+  "version": "0.1.4",
+  "authors": [
+    {
+      "name": "Stranik"
+    }
+  ],
+  "compatibility": {
+    "minimum": "12",
+    "verified": "12"
+  },
+  "manifest": "https://raw.githubusercontent.com/stranik12355-star/superheroes-foundry/main/system.json",
+  "download": "https://github.com/stranik12355-star/superheroes-foundry/releases/download/v0.1.4/superheroes.zip",
+  "esmodules": [
+    "scripts/traits-library.js",
+    "scripts/powers-library.js",
+    "scripts/superheroes.js",
+    "scripts/superheroes-features.js"
+  ],
+  "styles": [
+    "styles/superheroes-sheet.css"
+  ],
+  "languages": [
+    {
+      "lang": "ru",
+      "name": "Русский",
+      "path": "lang/ru.json"
+    }
+  ],
+  "documentTypes": {
+    "Actor": {
+      "character": {}
+    },
+    "Item": {
+      "power": {},
+      "trait": {},
+      "gear": {}
+    }
+  },
+  "packs": [
+    {
+      "name": "traits",
+      "label": "Библиотека: Особенности",
+      "path": "packs/traits",
+      "type": "Item",
+      "system": "superheroes"
+    },
+    {
+      "name": "powers",
+      "label": "Библиотека: Способности",
+      "path": "packs/powers",
+      "type": "Item",
+      "system": "superheroes"
+    }
+  ]
+}
