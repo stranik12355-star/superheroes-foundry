@@ -32,12 +32,9 @@ Hooks.on("hoverToken", (token, hovered) => {
     const maxHp = actor.system.health?.max || 1;
     const percent = hp / maxHp;
 
-    // Проверка прав (Опираемся на настройки токена displayBars)
     const displayMode = token.document.displayBars;
     const isOwner = token.document.isOwner;
     
-    // 20 = При наведении владельцем, 30 = Всегда для владельца
-    // 40 = При наведении всеми, 50 = Всегда для всех
     let canSee = false;
     if (displayMode === 40 || displayMode === 50) canSee = true;
     if ((displayMode === 20 || displayMode === 30) && isOwner) canSee = true;
@@ -67,18 +64,15 @@ Hooks.on("hoverToken", (token, hovered) => {
     statusDiv.textContent = statusText;
     statusDiv.className = `visible ${statusClass}`;
 
-    // Обновляем позицию текста над токеном каждую отрисовку кадра, пока наведена мышка
     const updatePosition = () => {
         if (!statusDiv.classList.contains("visible")) {
             canvas.app.ticker.remove(updatePosition);
             return;
         }
         
-        // Координаты токена на экране
         const x = token.center.x;
-        const y = token.y - 10; // Чуть выше токена
+        const y = token.y - 10; 
         
-        // Переводим координаты холста в координаты экрана
         const transform = canvas.stage.worldTransform;
         const screenX = (x * transform.a) + transform.tx;
         const screenY = (y * transform.d) + transform.ty;
@@ -88,4 +82,36 @@ Hooks.on("hoverToken", (token, hovered) => {
     };
 
     canvas.app.ticker.add(updatePosition);
+});
+
+// 3. Механика покраснения (тонирования) токена при получении ран
+Hooks.on("updateActor", (actor, changes, options, userId) => {
+    // Выполняем только у того, кто меняет ХП (чтобы не дублировать запросы)
+    if (game.user.id !== userId) return;
+
+    // Проверяем, изменилось ли здоровье
+    if (foundry.utils.hasProperty(changes, "system.health.value")) {
+        const hp = foundry.utils.getProperty(changes, "system.health.value");
+        const maxHp = actor.system.health?.max || 1;
+        const percent = hp / maxHp;
+
+        let tintColor = "#ffffff"; // Обычный цвет (нет тонирования)
+
+        if (percent <= 0) {
+            tintColor = "#550000"; // Без сознания (тёмно-бордовый)
+        } else if (percent <= 0.25) {
+            tintColor = "#ff4444"; // Тяжело ранен (ярко-красный)
+        } else if (percent <= 0.50) {
+            tintColor = "#ffb3b3"; // Ранен (бледно-красный/розовый)
+        }
+
+        // Обновляем все токены этого актера на карте
+        if (canvas.ready) {
+            const tokens = actor.getActiveTokens();
+            const updates = tokens.map(t => ({ _id: t.id, "texture.tint": tintColor }));
+            if (updates.length > 0) {
+                canvas.scene.updateEmbeddedDocuments("Token", updates);
+            }
+        }
+    }
 });
